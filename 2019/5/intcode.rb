@@ -16,6 +16,7 @@ class Intcode
     @input_buf = []
   end
 
+  private
   def get_param(mem, modes, addr, i)
     val = mem[addr+i]
     case modes[i]
@@ -30,10 +31,12 @@ class Intcode
     return val
   end
 
+  public
   def input(val)
     @input_buf << val
   end
 
+  public
   def run(addr = 0)
     running = true
     mem = @memory.clone
@@ -41,71 +44,55 @@ class Intcode
       instruction = mem[addr]
       opcode_l, opcode_h, *parmodes = instruction.digits.reverse
       opcode = (opcode_h or 0)*10 + opcode_l
-      parmodes.unshift(-1) # 1-index parmodes
+      parmodes.unshift(opcode) # mainly to 1-index parmodes
       case opcode
-      when 1
-        parmodes[3] = 1 # force 'immediate' mode (used as address for writing later)
+      when 1, 2
         op1 = get_param(mem, parmodes, addr, 1)
         op2 = get_param(mem, parmodes, addr, 2)
-        res = get_param(mem, parmodes, addr, 3)
-        mem[res] = op1 + op2
-        addr += 4
-      when 2
-        parmodes[3] = 1 # force 'immediate' mode (used as address for writing later)
-        op1 = get_param(mem, parmodes, addr, 1)
-        op2 = get_param(mem, parmodes, addr, 2)
-        res = get_param(mem, parmodes, addr, 3)
-        mem[res] = op1 * op2
+        to = mem[addr+3]
+        case opcode
+        when 1
+          mem[to] = op1 + op2
+        when 2
+          mem[to] = op1 * op2
+        end
         addr += 4
       when 3
-        parmodes[1] = 1 # force 'immediate' mode (used as address for writing later)
-        op = get_param(mem, parmodes, addr, 1)
-        print "Input[#{op}]: "
+        to = mem[addr+1]
+        print "Input[#{to}]: "
         if @input_buf.empty?
           i = gets.to_i
         else
           i = @input_buf.shift
-          pp i
+          puts i
         end
-        mem[op] = i
+        mem[to] = i
         addr += 2
       when 4
         op = get_param(mem, parmodes, addr, 1)
-        puts "Output[#{op}]: #{op}"
+        puts "Output: #{op}"
         addr += 2
       # For part 2
-      when 5
+      when 5, 6
         op1 = get_param(mem, parmodes, addr, 1)
         op2 = get_param(mem, parmodes, addr, 2)
-        if op1 != 0
+        if (opcode == 5 and op1 != 0) or
+            (opcode == 6 and op1 == 0)
           addr = op2
         else
           addr += 3
         end
       # For part 2
-      when 6
+      when 7, 8
         op1 = get_param(mem, parmodes, addr, 1)
         op2 = get_param(mem, parmodes, addr, 2)
-        if op1 == 0
-          addr = op2
-        else
-          addr += 3
+        to = mem[addr+3]
+        case opcode
+        when 7
+          mem[to] = (op1 < op2) ? 1 : 0
+        when 8
+          mem[to] = (op1 == op2) ? 1 : 0
         end
-      # For part 2
-      when 7
-        parmodes[3] = 1 # force 'immediate' mode (used as address for writing later)
-        op1 = get_param(mem, parmodes, addr, 1)
-        op2 = get_param(mem, parmodes, addr, 2)
-        res = get_param(mem, parmodes, addr, 3)
-        mem[res] = (op1 < op2) ? 1 : 0
-        addr += 4
-      # For part 2
-      when 8
-        parmodes[3] = 1 # force 'immediate' mode (used as address for writing later)
-        op1 = get_param(mem, parmodes, addr, 1)
-        op2 = get_param(mem, parmodes, addr, 2)
-        res = get_param(mem, parmodes, addr, 3)
-        mem[res] = (op1 == op2) ? 1 : 0
         addr += 4
       when 99
         running = false
@@ -116,14 +103,17 @@ class Intcode
     return mem
   end
 
+  public
   def [](addr)
     @memory[addr]
   end
 
+  public
   def []=(addr, val)
     @memory[addr] = val
   end
 
+  public
   def memory
     @memory.clone
   end
@@ -137,6 +127,5 @@ i.run
 
 puts
 puts "Part 2:"
-i = Intcode.new(input)
 i.input 5
 i.run
