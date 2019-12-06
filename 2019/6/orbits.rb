@@ -5,14 +5,9 @@ input = File.read('input').strip.split("\n")
 #part 1
 @orbiters = {}
 input.each do |line|
-  if line =~ /\A(.+)\)(.+)\z/
-    a = Regexp.last_match[1]
-    b = Regexp.last_match[2]
-    @orbiters[a] ||= []
-    @orbiters[a] << b
-  else
-    raise "Malformed line: #{line}"
-  end
+  a, b = line.split(')')
+  @orbiters[a] ||= []
+  @orbiters[a] << b
 end
 
 level = 1
@@ -36,41 +31,32 @@ puts "#{count} direct and indirect orbits found"
 #part 2
 @orbits = {}
 input.each do |line|
-  if line =~ /\A(.+)\)(.+)\z/
-    a = Regexp.last_match[1]
-    b = Regexp.last_match[2]
-    @orbits[b] = a
-  else
-    raise "Malformed line: #{line}"
-  end
+  a,b = line.split(')')
+  @orbits[b] = a
 end
 
-common = nil
-from_me = [@orbits['YOU']]
-from_san = [@orbits['SAN']]
-while common.nil?
-  next_me = @orbits[from_me.last]
+require 'set'
+from_me = Set.new
+last_me = 'YOU'
+from_san = Set.new
+last_san = 'SAN'
+loop do
+  next_me = @orbits[last_me]
   if not next_me.nil?
-    if from_san.include?(next_me)
-      common = next_me
-    end
     from_me << next_me
+    last_me = next_me
   end
 
-  if common.nil?
-    next_san = @orbits[from_san.last]
-    if not next_san.nil?
-      if from_me.include? next_san
-        common = next_san
-      end
-      from_san << next_san
-    end
+  next_san = @orbits[last_san]
+  if not next_san.nil?
+    from_san << next_san
+    last_san = next_san
   end
 
   if next_me.nil? and next_san.nil?
-    raise 'Couldn\'t find common center'
+    break
   end
 end
 
-puts "Transfers needed: #{from_me.index(common) + from_san.index(common)}"
+puts "Transfers needed: #{(from_me ^ from_san).length}"
 
