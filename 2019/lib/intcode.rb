@@ -1,5 +1,3 @@
-input = File.read('input').split(',').map(&:to_i)
-
 # backport Integer.digits to Ruby <2.4
 if not 1.respond_to? :digits
   class Integer
@@ -167,16 +165,3 @@ class Intcode
   end
 
 end
-
-@boost = Intcode.new(input, false)
-
-#part 1
-@boost.input(1)
-@boost.run
-puts "Test result: #{@boost.output}"
-
-#part 2
-@boost.clear
-@boost.input(2)
-@boost.run
-puts "Coordinates: #{@boost.output}"
