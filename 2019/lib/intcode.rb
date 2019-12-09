@@ -1,77 +1,83 @@
-# backport Integer.digits to Ruby <2.4
-if not 1.respond_to? :digits
-  class Integer
-    def digits
-      self.to_s.chars.map(&:to_i)
-    end
-  end
-end
-
 class Intcode
 
+  attr_accessor :verbose
+  attr_accessor :addr
+
   def initialize(memory, verbose = true)
-    @memory = memory.clone
-    @rel_base = 0
+    @orig_memory = memory.clone
     @verbose = verbose
     @input_buf = Queue.new
     @output_buf = Queue.new
-  end
-
-  private
-  def get_addr(mem, modes, addr, i)
-    val = addr+i
-    case modes[i]
-    when 0, nil
-      # read memory address
-      val = read_mem(mem, val)
-    when 1
-      # return as is
-    when 2
-      val = read_mem(mem, val) + @rel_base
-    else
-      raise "Unknown param mode: #{modes[i]}"
-    end
-    return val
-  end
-
-  private
-  def read_mem(mem, addr)
-    if addr < 0
-      raise "Illegal address: #{addr}"
-    end
-    return (mem[addr] or 0)
-  end
-
-  private
-  def get_param(mem, modes, addr, i)
-    return read_mem(mem, get_addr(mem, modes, addr, i))
+    reset
   end
 
   public
-  def run(addr = 0)
-    running = true
-    mem = @memory.clone
+  def reset
+    @memory = @orig_memory.clone
+    @addr = 0
     @rel_base = 0
-    outputs = []
+    @input_buf.clear
+    @output_buf.clear
+    true
+  end
+
+  private
+  def get_addr(modes)
+    mode = modes.shift
+    addr = next_addr
+    case mode
+    when 0, nil
+      # Get address from memory
+      addr = self[addr]
+    when 1
+      # Return as is
+    when 2
+      # Get address from memory, add relative base
+      addr = self[addr] + @rel_base
+    else
+      raise "Unknown param mode: #{mode}"
+    end
+    return addr
+  end
+
+  private
+  def get_param(modes)
+    return self[get_addr(modes)]
+  end
+
+  private
+  def next_addr
+    addr = @addr
+    @addr += 1
+    return addr
+  end
+
+  public
+  def run
+    running = true
+    cycles = 0
     while running
-      instruction = read_mem(mem, addr)
-      opcode_l, opcode_h, *parmodes = instruction.digits.reverse
-      opcode = (opcode_h or 0)*10 + opcode_l
-      parmodes.unshift(opcode) # mainly to 1-index parmodes
+      instruction = self[next_addr]
+      opcode = instruction % 100
+      parmodes = []
+      instruction /= 100
+      while instruction > 0
+        parmodes << instruction % 10
+        instruction /= 10
+      end
       case opcode
       when 1, 2
-        op1 = get_param(mem, parmodes, addr, 1)
-        op2 = get_param(mem, parmodes, addr, 2)
-        to = get_addr(mem, parmodes, addr, 3)
+        op1 = get_param(parmodes)
+        op2 = get_param(parmodes)
+        to = get_addr(parmodes)
         case opcode
         when 1
-          mem[to] = op1 + op2
+          self[to] = op1 + op2
         when 2
-          mem[to] = op1 * op2
+          self[to] = op1 * op2
         end
-        addr += 4
       when 3
-        to = get_addr(mem, parmodes, addr, 1)
+        to = get_addr(parmodes)
         printed = false
         if @verbose
           print "Input[#{to}]: "
@@ -91,51 +97,49 @@ class Intcode
         if @verbose and not printed
           puts i
         end
-        mem[to] = i
-        addr += 2
+        self[to] = i
       when 4
-        op = get_param(mem, parmodes, addr, 1)
+        op = get_param(parmodes)
         if @verbose
           puts "Output: #{op}"
         end
         @output_buf << op
-        addr += 2
       when 5, 6
-        op1 = get_param(mem, parmodes, addr, 1)
-        op2 = get_param(mem, parmodes, addr, 2)
+        op1 = get_param(parmodes)
+        op2 = get_param(parmodes)
         if (opcode == 5 and op1 != 0) or
             (opcode == 6 and op1 == 0)
-          addr = op2
-        else
-          addr += 3
+          @addr = op2
         end
       when 7, 8
-        op1 = get_param(mem, parmodes, addr, 1)
-        op2 = get_param(mem, parmodes, addr, 2)
-        to = get_addr(mem, parmodes, addr, 3)
+        op1 = get_param(parmodes)
+        op2 = get_param(parmodes)
+        to = get_addr(parmodes)
         case opcode
         when 7
-          mem[to] = (op1 < op2) ? 1 : 0
+          self[to] = (op1 < op2) ? 1 : 0
         when 8
-          mem[to] = (op1 == op2) ? 1 : 0
+          self[to] = (op1 == op2) ? 1 : 0
         end
-        addr += 4
       when 9
-        op = get_param(mem, parmodes, addr, 1)
+        op = get_param(parmodes)
         @rel_base += op
-        addr += 2
       when 99
         running = false
       else
         raise ArgumentError, "Unknown opcode #{opcode}"
       end
+      cycles += 1
     end
-    return mem
+    return cycles
   end
 
   public
   def [](addr)
-    @memory[addr]
+    if addr < 0
+      raise "Illegal address: #{addr}"
+    end
+    return (@memory[addr] or 0)
   end
 
   public
@@ -152,16 +156,12 @@ class Intcode
   def input(val)
     @input_buf << val
   end
+  alias << input
 
   public
   def output
     @output_buf.pop
   end
-
-  public
-  def clear
-    @input_buf.clear
-    @output_buf.clear
-  end
+  alias pop output
 
 end
