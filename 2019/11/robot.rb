@@ -6,7 +6,14 @@ class Robot
 
   DIRECTIONS = [ :up, :right, :down, :left ]
 
-  def initialize
+  def initialize(program)
+    @brain = Intcode.new(program, false)
+    reset
+  end
+
+  public
+  def reset
+    @brain.reset
     @direction = 0
     @x = 0
     @y = 0
@@ -16,11 +23,21 @@ class Robot
   end
 
   public
+  def run
+    @brain << camera
+    @brain.run do
+      paint(@brain.output)
+      turn(@brain.output)
+      camera
+    end
+  end
+
+  public
   def paint(color)
     @grid[[@x,@y]] = color
   end
 
-  public
+  private
   def turn(dir)
     case dir
     when 0
@@ -43,7 +60,7 @@ class Robot
     end
   end
 
-  public
+  private
   def camera
     return @grid[[@x,@y]] || 0
   end
@@ -69,29 +86,15 @@ class Robot
 end
 
 # part 1
-@brain = Intcode.new(input, false)
-@robot = Robot.new
-
-@brain << @robot.camera
-@brain.run do
-  @robot.paint(@brain.output)
-  @robot.turn(@brain.output)
-  @robot.camera
-end
+@robot = Robot.new(input)
+@robot.run
 
 puts "#{@robot.paint_count} panels (wrongly) painted"
 
 # part 2
-@brain.reset
-@robot = Robot.new
+@robot.reset
 @robot.paint(1) # Start on a white panel
-
-@brain << @robot.camera
-@brain.run do
-  @robot.paint(@brain.output)
-  @robot.turn(@brain.output)
-  @robot.camera
-end
+@robot.run
 
 puts
 @robot.grid.each do |line|
