@@ -32,7 +32,7 @@ img.each do |line|
     when 0
       print ' '
     when 1
-      print '#'
+      print "\u2588"
     else
       raise "Unexpected value: #{pixel}"
     end
