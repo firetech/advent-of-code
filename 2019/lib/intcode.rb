@@ -4,7 +4,12 @@ class Intcode
   attr_accessor :addr
 
   def initialize(memory, verbose = true)
-    @orig_memory = memory.clone
+    @orig_memory = case memory
+                   when String
+                     memory.split(',').map(&:to_i)
+                   when Array
+                     memory.clone
+                   end
     @verbose = verbose
     @input_buf = Queue.new
     @output_buf = Queue.new
