@@ -18,6 +18,7 @@ class Intcode
 
   public
   def reset
+    @running = false
     @memory = @orig_memory.clone
     @addr = 0
     @rel_base = 0
@@ -59,9 +60,9 @@ class Intcode
 
   public
   def run
-    running = true
+    @running = true
     cycles = 0
-    while running
+    while @running
       instruction = self[next_addr]
       opcode = instruction % 100
       parmodes = []
@@ -130,7 +131,7 @@ class Intcode
         op = get_param(parmodes)
         @rel_base += op
       when 99
-        running = false
+        @running = false
       else
         raise ArgumentError, "Unknown opcode #{opcode}"
       end
@@ -168,5 +169,15 @@ class Intcode
     @output_buf.pop
   end
   alias pop output
+
+  public
+  def has_output?
+    (not @output_buf.empty?)
+  end
+
+  public
+  def running?
+    @running
+  end
 
 end
