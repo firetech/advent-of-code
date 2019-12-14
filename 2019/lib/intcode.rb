@@ -133,7 +133,7 @@ class Intcode
       when 99
         @running = false
       else
-        raise ArgumentError, "Unknown opcode #{opcode}"
+        raise ArgumentError, "Unknown opcode #{opcode} at address #{@addr}"
       end
       cycles += 1
     end
