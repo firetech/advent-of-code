@@ -33,13 +33,13 @@ def handle_output
         tile_ch = "\u2588"
       when 2
         @blocks << [x,y]
-        tile_ch = "\u2592"
+        tile_ch = "\u25C6"
       when 3
         @paddle = x
-        tile_ch = "\u2594"
+        tile_ch = "\u2580"
       when 4
         @ball = x
-        tile_ch = "\u2022"
+        tile_ch = "\u25CB"
       end
       @grid[y] ||= []
       @grid[y][x] = tile
