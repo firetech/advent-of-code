@@ -30,32 +30,24 @@ def get_ores(fuel_amount)
   have = {}
   ores = 0
   while not need.empty?
-    to, amount = need.shift
-    if to == 'ORE'
-      ores += amount
+    need_chem, need_amount = need.shift
+    if need_chem == 'ORE'
+      ores += need_amount
     else
-      if have.has_key?(to) and have[to] > 0
-        take = [have[to], amount].min
-        have[to] -= take
-        amount -= take
+      if (have[need_chem] or 0) > 0
+        take = [have[need_chem], need_amount].min
+        have[need_chem] -= take
+        need_amount -= take
       end
-      if amount > 0
-        data = @transforms[to]
-        times = Rational(amount, data[:amount]).ceil
-        data[:input].each do |from, from_amount|
-          from_amount *= times
-          if have.has_key?(from)
-            take = [have[from],from_amount].min
-            have[from] -= take
-            from_amount -= take
-          end
-          if from_amount > 0
-            need[from] = (need[from] or 0) + from_amount
-          end
+      if need_amount > 0
+        data = @transforms[need_chem]
+        times = (need_amount.to_f / data[:amount]).ceil
+        data[:input].each do |src_chem, src_amount|
+          need[src_chem] = (need[src_chem] or 0) + src_amount * times
         end
-        remaining = (data[:amount] * times) - amount
+        remaining = (data[:amount] * times) - need_amount
         if remaining > 0
-          have[to] = (have[to] or 0) + remaining
+          have[need_chem] = (have[need_chem] or 0) + remaining
         end
       end
     end
@@ -67,6 +59,8 @@ end
 puts "#{get_ores(1)} ORE needed for 1 FUEL"
 
 # part 2
-# Find first amount of fuel that exceeds a trillion ore, then reduce by one
-fuel = (0..1000000000).bsearch { |fuel_amount| get_ores(fuel_amount) >= 1000000000000 } - 1
-puts "#{fuel} FUEL can be produced with a trillion ORE"
+TRILLION = 1000000000000
+# Find first amount of FUEL that _exceeds_ a trillion ORE (due to how bsearch() works)
+fuel = (0..TRILLION).bsearch { |fuel_amount| get_ores(fuel_amount) >= TRILLION }
+# Reduce by one to get max amount of FUEL below a trillion ORE
+puts "#{fuel - 1} FUEL can be produced with a trillion ORE"
