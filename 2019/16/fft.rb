@@ -5,32 +5,29 @@ input = File.read('input').strip
 
 @list = input.chars.map(&:to_i)
 
-@patterns = {}
-def get_pattern(index, length)
-  if not @patterns.has_key?(index)
-    pattern = []
-    [0, 1, 0, -1].each do |elem|
-      if pattern.length > length
-        break
-      end
-      pattern += [elem] * (index + 1)
-    end
-    if pattern.length < (length + 1)
-      pattern *= ((length + 1.0) / pattern.length).ceil
-    end
-    @patterns[length] ||= {}
-    @patterns[length][index] = pattern[1..length]
-  end
-  return @patterns[length][index]
-end
-
+# part 1
 def fft(list)
+  # Generate list of partial sums
+  part_sums = [0]
+  sum = 0
+  list.each do |digit|
+    sum += digit
+    part_sums << sum
+  end
+
+  length = list.length
   new_list = []
-  (0...list.length).each do |index|
-    pattern = get_pattern(index, list.length)
+  (1..length).each do |i|
     sum = 0
-    list.zip(pattern) do |digit, multiplier|
-      sum += digit * multiplier
+    # Add sums matching the 1 part
+    ((i - 1)..length).step(4 * i) do |sum_start|
+      sum_end = sum_start + i
+      sum += part_sums[[sum_end, length].min] - part_sums[sum_start]
+    end
+    # Remove sums matching the -1 part
+    ((3 * i - 1)..length).step(4 * i) do |diff_start|
+      diff_end = diff_start + i
+      sum -= part_sums[[diff_end, length].min] - part_sums[diff_start]
     end
     new_list << sum.abs % 10
   end
