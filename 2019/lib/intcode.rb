@@ -19,6 +19,7 @@ class Intcode
   public
   def reset
     @running = false
+    @input_wait = false
     @memory = @orig_memory.clone
     @addr = 0
     @rel_base = 0
@@ -91,14 +92,20 @@ class Intcode
         i = nil
         if @input_buf.empty?
           if block_given?
+            @input_wait = true
             i = yield
+            @input_wait = false
           elsif @verbose
+            @input_wait = true
             i = gets.to_i
+            @input_wait = false
             printed = true
           end
         end
         if i.nil?
+          @input_wait = true
           i = @input_buf.pop
+          @input_wait = false
         end
         if @verbose and not printed
           puts i
@@ -178,6 +185,11 @@ class Intcode
   public
   def running?
     @running
+  end
+
+  public
+  def waiting_for_input?
+    @input_wait
   end
 
 end
