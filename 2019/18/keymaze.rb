@@ -29,7 +29,8 @@ def parse_maze
         y = from_y + delta_y
         pos = [x,y]
         tile = @maze[y][x]
-        next if tile == '#' or distance.has_key?(pos)
+        next if tile == '#'
+        next if distance.has_key?(pos)
         distance[pos] = distance[[from_x,from_y]] + 1
         if tile =~ /\A[[:lower:]]\z/
           keys << [ tile, needed_keys, distance[pos] ]
