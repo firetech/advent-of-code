@@ -21,7 +21,7 @@ def parse_maze
   @key_pos.merge(@start).each do |key, key_pos|
     queue = [ [*key_pos, []] ]
     distance = { key_pos => 0 }
-    keys = {}
+    keys = []
     while not queue.empty?
       from_x, from_y, needed_keys = queue.shift
       [[0, -1], [0, 1], [-1, 0], [1, 0]].each do |delta_x, delta_y|
@@ -32,12 +32,9 @@ def parse_maze
         next if tile == '#' or distance.has_key?(pos)
         distance[pos] = distance[[from_x,from_y]] + 1
         if tile =~ /\A[[:lower:]]\z/
-          keys[tile] = {
-            distance: distance[pos],
-            needed_keys: needed_keys.sort
-          }
+          keys << [ tile, needed_keys, distance[pos] ]
         end
-        if tile =~ /\A[[:upper:]]\z/
+        if tile =~ /\A[[:alpha:]]\z/
           queue << [x, y, needed_keys + [tile.downcase]]
         else
           queue << [x, y, needed_keys]
@@ -48,36 +45,31 @@ def parse_maze
   end
 end
 
-def reachable_keys(from_keys, unlocked = [])
-  keys = {}
-  from_keys.each_with_index do |from_key, from_index|
-    @key_to_key[from_key].each do |key, data|
+def reachable_keys(pos, unlocked = [])
+  keys = []
+  pos.each_with_index do |from_key, runner|
+    @key_to_key[from_key].each do |key, needed_keys, distance|
       next if unlocked.include?(key)
-      if (data[:needed_keys] - unlocked).empty?
-        keys[key] = {
-          from: from_index,
-          distance: data[:distance]
-        }
-      end
+      next unless (needed_keys - unlocked).empty?
+      keys << [ runner, key, distance ]
     end
   end
   return keys
 end
 
-def min_steps(from_keys, unlocked = [], cache = {})
-  cache_key = [from_keys.sort.join, unlocked.sort.join]
+def min_steps(pos, unlocked = [], cache = {})
+  cache_key = [pos.sort.join, unlocked.sort.join]
   if not cache.has_key?(cache_key)
-    keys = reachable_keys(from_keys, unlocked)
+    keys = reachable_keys(pos, unlocked)
     if keys.empty?
       val = 0
     else
       steps = []
-      keys.each do |key, data|
-        i = data[:from]
-        orig = from_keys[i]
-        from_keys[i] = key
-        steps << data[:distance] + min_steps(from_keys, unlocked + [key], cache)
-        from_keys[i] = orig
+      keys.each do |runner, key, distance|
+        orig = pos[runner]
+        pos[runner] = key
+        steps << distance + min_steps(pos, unlocked + [key], cache)
+        pos[runner] = orig
       end
       val = steps.min
     end
@@ -86,17 +78,32 @@ def min_steps(from_keys, unlocked = [], cache = {})
   return cache[cache_key]
 end
 
-# Calculate part 1
+# part 1
+print 'Minimum steps (part 1): '
+t_start = Time.now
 parse_maze
-puts "Calculating part 1..."
-puts "Minimum steps (part 1): #{min_steps(@start.keys)}"
+t_mid = Time.now
+puts min_steps(@start.keys)
+t_end = Time.now
+puts '  (Parse: %.3fs, Calc: %.3fs, Total: %.3fs)' % [
+  t_mid - t_start,
+  t_end - t_mid,
+  t_end - t_start
+]
 
-# Modify maze for part 2
+# part 2
 sx, sy = @start.values.first
 @maze[sy-1][sx-1..sx+1] = @maze[sy+1][sx-1..sx+1] = '@#@'
 @maze[sy][sx-1..sx+1] = '###'
 
-# Calculate part 2
+print 'Minimum steps (part 2): '
+t_start = Time.now
 parse_maze
-puts "Calculating part 2..."
-puts "Minimum steps (part 2): #{min_steps(@start.keys)}"
+t_mid = Time.now
+puts min_steps(@start.keys)
+t_end = Time.now
+puts '  (Parse: %.3fs, Calc: %.3fs, Total: %.3fs)' % [
+  t_mid - t_start,
+  t_end - t_mid,
+  t_end - t_start
+]
