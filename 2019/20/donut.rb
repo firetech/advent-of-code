@@ -33,8 +33,6 @@ find_h_portals(@map.map(&:chars).transpose.map(&:join)).each do |portal, points|
 end
 @start = @portals.delete('AA').first[0..1]
 @goal = @portals.delete('ZZ').first[0..1]
-@map[@start[1]][@start[0]] = '!'
-@map[@goal[1]][@goal[0]] = '!'
 
 @pmap = {}
 @portals.each do |portal, points|
@@ -47,43 +45,66 @@ end
   @pmap[b_key] = a
 end
 
-def shortest_path(recursive)
-  queue = [ [*@start, 0] ]
-  distance = { queue.first => 0 }
-  goal = [*@goal, 0]
-  while not queue.empty? and not distance.has_key?(goal)
+@paths = {}
+([@start] + @pmap.keys).each do |base|
+  base_x, base_y = base
+  queue = [ base ]
+  distance = { base => 0 }
+  paths = {}
+  while not queue.empty?
     from = queue.shift
     from_x, from_y, level = from
     [[0, -1], [0, 1], [-1, 0], [1, 0]].each do |delta_x, delta_y|
       x = from_x + delta_x
       y = from_y + delta_y
-      to = [x, y, level]
       tile = @map[y][x]
-      next unless tile == '.' or (level == 0 and tile == '!')
+      next if tile != '.'
+      to = [x, y]
       next if distance.has_key?(to)
       distance[to] = distance[from] + 1
-      queue << to
-    end
-    p_from = [from_x, from_y]
-    if @pmap.has_key?(p_from)
-      p_to = @pmap[p_from]
-      to = p_to[0..1]
-      to_level = 0
-      if recursive
-        to_level = level + p_to[2]
-      end
-      to << to_level
-      if to_level >= 0 and not distance.has_key?(to)
-        distance[to] = distance[from] + 1
+      if to == @goal
+        paths[@goal] = distance[to]
+      elsif @pmap.has_key?(to)
+        p_x, p_y, p_delta = @pmap[to]
+        paths[[p_x, p_y]] = [distance[to] + 1, p_delta]
+      else
         queue << to
       end
     end
   end
-  return distance[goal]
+  @paths[base] = paths
+end
+
+def shortest_path(recursive)
+  queue = [ [@start, 0] ]
+  distance = { queue.first => 0 }
+  while not queue.empty?
+    from = queue.shift
+    f_point, f_level = from
+    paths = @paths[f_point]
+    if paths.has_key?(@goal) and f_level == 0
+      return distance[from] + paths[@goal]
+    end
+    @paths[f_point].each do |point, data|
+      next if point == @goal
+      p_dist, p_delta = data
+      to_level = if recursive
+                   to_level = f_level + p_delta
+                 else
+                   0
+                 end
+      next if to_level < 0
+      to = [point, to_level]
+      next if distance.has_key?(to)
+      distance[to] = distance[from] + p_dist
+      queue << to
+    end
+  end
+  retun nil
 end
 
 # part 1
 puts "Shortest path: #{shortest_path(false)} steps"
 
 # part 2
-puts "Shortest path: #{shortest_path(true)} steps"
+puts "Shortest path with recursive maze: #{shortest_path(true)} steps"
