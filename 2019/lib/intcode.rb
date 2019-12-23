@@ -18,6 +18,7 @@ class Intcode
 
   public
   def reset
+    @started = false
     @running = false
     @input_wait = false
     @memory = @orig_memory.clone
@@ -61,6 +62,7 @@ class Intcode
 
   public
   def run
+    @started = true
     @running = true
     cycles = 0
     while @running
@@ -95,6 +97,11 @@ class Intcode
             @input_wait = true
             i = yield
             @input_wait = false
+            if i.is_a?(Array)
+              arr = i
+              i = arr.shift
+              arr.each { |x| @input_buf << x }
+            end
           elsif @verbose
             @input_wait = true
             i = gets.to_i
@@ -145,6 +152,9 @@ class Intcode
       cycles += 1
     end
     return cycles
+  rescue Exception => e
+    @running = false
+    raise e
   end
 
   public
@@ -180,6 +190,11 @@ class Intcode
   public
   def has_output?
     (not @output_buf.empty?)
+  end
+
+  public
+  def started?
+    @started
   end
 
   public
