@@ -135,4 +135,4 @@ simplify(bits_of_n.flat_map { |b| bits[b] }, cards).reverse_each do |op, arg|
     pos = (pos * modinv(arg, cards)) % cards
   end
 end
-puts "Position of card 2020: #{pos}"
+puts "Card at position 2020: #{pos}"
