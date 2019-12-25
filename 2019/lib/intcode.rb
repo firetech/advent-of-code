@@ -1,9 +1,10 @@
 class Intcode
 
   attr_accessor :verbose
+  attr_accessor :interactive
   attr_accessor :addr
 
-  def initialize(memory, verbose = true)
+  def initialize(memory, verbose = true, interactive = false)
     @orig_memory = case memory
                    when String
                      memory.split(',').map(&:to_i)
@@ -11,6 +12,7 @@ class Intcode
                      memory.clone
                    end
     @verbose = verbose
+    @interactive = interactive
     @input_buf = Queue.new
     @output_buf = Queue.new
     reset
@@ -102,7 +104,7 @@ class Intcode
               i = arr.shift
               arr.each { |x| @input_buf << x }
             end
-          elsif @verbose
+          elsif @interactive
             @input_wait = true
             i = gets.to_i
             @input_wait = false
