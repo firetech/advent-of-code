@@ -139,6 +139,7 @@ begin
   @map[room].each do |dir, to|
     if to.nil?
       check_dir = dir
+      break
     end
   end
   raise "Don't know where to go..." if check_dir.nil?
