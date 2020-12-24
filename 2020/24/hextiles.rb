@@ -4,45 +4,36 @@ file = 'input'; part2_days = 100
 input = File.read(file).strip.split("\n")
 
 # Part 1
-def neighbour(x, y, z, dir)
-  if not x + y + z == 0
-    raise "#{x} + #{y} + #{z} != 0"
-  end
-  # For explanation, see https://www.redblobgames.com/grids/hexagons/#coordinates-cube
+def neighbour(q, r, dir)
+  # For explanation, see https://www.redblobgames.com/grids/hexagons/#coordinates-axial
   case dir
   when 'e'
-    x += 1
-    y -= 1
+    q += 1
   when 'ne'
-    x += 1
-    z -= 1
+    q += 1
+    r -= 1
   when 'nw'
-    y += 1
-    z -= 1
+    r -= 1
   when 'w'
-    x -= 1
-    y += 1
+    q -= 1
   when 'sw'
-    x -= 1
-    z += 1
+    q -= 1
+    r += 1
   when 'se'
-    y -= 1
-    z += 1
+    r += 1
   else
     raise "Unknown dir: '#{dir}'"
   end
-  return x, y, z
+  return q, r
 end
 
 grid = Hash.new(false)
 input.each do |line|
-  x = 0
-  y = 0
-  z = 0
+  pos = [0, 0]
   line.scan(/(?:(?:n|s)?(?:e|w))/) do |dir|
-    x, y, z = neighbour(x, y, z, dir)
+    pos = neighbour(*pos, dir)
   end
-  grid[[x, y, z]] = (not grid[[x, y, z]])
+  grid[pos] = (not grid[pos])
 end
 puts "#{grid.values.count(true)} black tiles generated"
 
@@ -57,9 +48,9 @@ end
 ndirs = ['e', 'ne', 'nw', 'w', 'sw', 'se']
 part2_days.times do
   state.keys.each do |key| # Not using each_key due to modification
-    x, y, z = state[key][0]
+    q, r = state[key][0]
     ndirs.each do |dir|
-      npos = neighbour(x, y, z, dir)
+      npos = neighbour(q, r, dir)
       key = npos.hash
       nstate = state[key]
       if nstate.nil?
