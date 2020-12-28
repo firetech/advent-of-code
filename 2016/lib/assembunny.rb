@@ -8,6 +8,8 @@ class AssemBunny
         [ Regexp.last_match(1).to_sym, Regexp.last_match(2).to_sym ]
       when /\Ajnz (-?\d+|[[:lower:]]) (-?\d+|[[:lower:]])\z/
         [ :jnz, reg_or_int(Regexp.last_match(1)), reg_or_int(Regexp.last_match(2)) ]
+      when /\Atgl (-?\d+|[[:lower:]])\z/
+        [ :tgl, reg_or_int(Regexp.last_match(1)) ]
       else
         raise "Malformed line: '#{line}'"
       end
@@ -43,6 +45,20 @@ class AssemBunny
       when :jnz
         if get(reg, arg1) != 0
           next_ip = ip + get(reg, arg2)
+        end
+      when :tgl
+        i = ip + get(reg, arg1)
+        if i < code.length
+          tglinstr = code[i][0]
+          case code[i].length
+          when 2 # One argument
+            tglinstr = (tglinstr == :inc ? :dec : :inc)
+          when 3 # Two arguments
+            tglinstr = (tglinstr == :jnz ? :cpy : :jnz)
+          else
+            raise "What in the world is this? #{new_instr.inspect}"
+          end
+          code[i] = [tglinstr, *code[i][1..-1]].freeze
         end
       else
         raise "Unknown instruction: '#{instr}'"
