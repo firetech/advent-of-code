@@ -1,25 +1,26 @@
+require 'thread'
+
 class AssemBunny
+  ARG = '([[:lower:]]|-?\\d+)'
   def initialize(file)
     @code = File.read(file).strip.split("\n").map do |line|
       case line
-      when /\Acpy (-?\d+|[[:lower:]]) ([[:lower:]])\z/
-        [ :cpy, reg_or_int(Regexp.last_match(1)), Regexp.last_match(2).to_sym ]
-      when /\A(inc|dec) ([[:lower:]])\z/
-        [ Regexp.last_match(1).to_sym, Regexp.last_match(2).to_sym ]
-      when /\Ajnz (-?\d+|[[:lower:]]) (-?\d+|[[:lower:]])\z/
-        [ :jnz, reg_or_int(Regexp.last_match(1)), reg_or_int(Regexp.last_match(2)) ]
-      when /\Atgl (-?\d+|[[:lower:]])\z/
-        [ :tgl, reg_or_int(Regexp.last_match(1)) ]
+      when /\A(cpy|jnz) #{ARG} #{ARG}\z/
+        [ Regexp.last_match(1).to_sym, reg_or_int(Regexp.last_match(2)), reg_or_int(Regexp.last_match(3)) ]
+      when /\A(inc|dec|tgl|out) #{ARG}\z/
+        [ Regexp.last_match(1).to_sym, reg_or_int(Regexp.last_match(2)) ]
       else
         raise "Malformed line: '#{line}'"
       end
     end
     @code.each(&:freeze)
     @code.freeze
+    @output = Queue.new
   end
 
   public
   def run(init_reg = {})
+    @output.clear
     code = @code.dup
     ip = 0
     reg = Hash.new(0)
@@ -60,6 +61,8 @@ class AssemBunny
           end
           code[i] = [tglinstr, *code[i][1..-1]].freeze
         end
+      when :out
+        @output << get(reg, arg1)
       else
         raise "Unknown instruction: '#{instr}'"
       end
@@ -68,7 +71,24 @@ class AssemBunny
     return reg
   end
 
-  # Skip multiplication:
+  public
+  def output
+    @output.pop
+  end
+
+  public
+  def flush
+    @output.clear
+  end
+
+  public
+  def clone
+    c = super
+    c.instance_variable_set(:@output, Queue.new)
+    return c
+  end
+
+  # Skip multiplication loops:
   #   cpy B C
   #   inc A
   #   dec C
@@ -95,7 +115,7 @@ class AssemBunny
     return false
   end
 
-  # Skip addition:
+  # Skip addition loops:
   #   inc A
   #   dec C
   #   jnz C -2
