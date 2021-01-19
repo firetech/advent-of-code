@@ -61,9 +61,9 @@ part2_days.times do
     end
   end
   new_state = {}
-  state.each_value do |pos, active, neighbours|
+  state.each do |key, (pos, active, neighbours)|
     if (active and (neighbours == 1 or neighbours == 2)) or (not active and neighbours == 2)
-      new_state[pos.hash] = [pos, true, 0]
+      new_state[key] = [pos, true, 0]
     end
   end
   state = new_state
