@@ -57,7 +57,7 @@ class AssemBunny
           when 3 # Two arguments
             tglinstr = (tglinstr == :jnz ? :cpy : :jnz)
           else
-            raise "What in the world is this? #{new_instr.inspect}"
+            raise "What in the world is this? #{code[i].inspect}"
           end
           code[i] = [tglinstr, *code[i][1..-1]].freeze
         end
