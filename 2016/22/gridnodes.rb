@@ -39,9 +39,15 @@ nodes.to_a.combination(2) do |(a, (_, a_used, a_avail)), (b, (_, b_used, b_avail
   # Turns out, all viable pairs include the single empty space, let's use this for part 2
   if a_used > 0 and b_avail >= a_used
     viable << a
+    if b_used > 0
+      STDERR.puts "Warning: Viable pair did't include the empty space. Step calculation will likely be wrong."
+    end
   end
   if b_used > 0 and a_avail >= b_used
     viable << b
+    if a_used > 0
+      STDERR.puts "Warning: Viable pair did't include the empty space. Step calculation will likely be wrong."
+    end
   end
 end
 puts "#{viable.count} viable pairs"
@@ -59,10 +65,15 @@ end
 # ..####      ####..
 # ...._.      .._...
 #
-# i.e. free path between goal node (G) and 0,0 (!)
-(0..max_x).each do |x|
-  if not viable.include?([x, 0])
-    raise "This solution won't work, node-x#{x}-y0 is not viable. :("
+# i.e. free path between goal node (G) and 0,0 (!) and on the entire second row.
+# This means that all nodes with y = 0 and y = 1 must be part of a viable pair
+# (with the empty node (_) being the other part).
+(0..1).each do |y|
+  (0..max_x).each do |x|
+    pos = [x, y]
+    if not viable.include?(pos) and empty.first != pos
+      raise "This solution won't work, node-x#{x}-y#{y} is not viable. :("
+    end
   end
 end
 
