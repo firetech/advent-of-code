@@ -70,6 +70,15 @@ def store_hash(index, hash)
   end
 end
 
+def child_running?(child)
+  begin
+    Process.getpgid(child)
+    return true
+  rescue Errno::ESRCH
+    return false
+  end
+end
+
 # Queue up a big amount of hashes to be calculated.
 # If this is lower than the answer, only one thread will be active in the end.
 25000.times { |i| get_hash(i, false) }
@@ -100,7 +109,7 @@ begin
           end
           write_from_fork.close
           read_to_fork.close
-          while not (Process.getpgid(child) rescue nil).nil? and index = @waiting.pop
+          while child_running?(child) and index = @waiting.pop
             write_to_fork.puts(index.to_s)
             hash = read_from_fork.gets
             store_hash(index, hash.strip)
