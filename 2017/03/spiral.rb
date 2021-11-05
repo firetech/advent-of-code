@@ -4,7 +4,7 @@ input = 312051
 #input = 23
 #input = 1024
 
-# part 1
+# Part 1
 layer = (Math.sqrt(input).ceil.to_i / 2) + 1
 l_size = layer * 2 - 1
 prev_max = [0, (l_size - 2)**2].max
@@ -13,7 +13,7 @@ midpoint = prev_max + (side*2 + 1) * (layer - 1)
 
 puts "Steps to #{input}: #{(layer - 1) + (input - midpoint).abs}"
 
-# part 2
+# Part 2
 # You could use https://oeis.org/A141481 for this, but...
 require 'matrix'
 

@@ -4,12 +4,14 @@ input = File.read('input').strip
 
 sheet = input.split("\n").map { |line| line.split(/\s+/).map(&:to_i) }
 
+# Part 1
 chksum = sheet.inject(0) do |sum, line|
   sum + (line.max - line.min)
 end
 
 puts "Spreadsheet checksum: #{chksum}"
 
+# Part 2
 divsum = sheet.inject(0) do |sum, line|
   div = 0
   line.combination(2) do |a, b|

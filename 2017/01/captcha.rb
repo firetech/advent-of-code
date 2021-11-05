@@ -12,8 +12,8 @@ input = File.read('input').strip
 chars = input.chars
 
 sum = {
-  1 => 0,
-  chars.length/2 => 0
+  1 => 0,             # Part 1
+  chars.length/2 => 0 # Part 2
 }
 chars.each_with_index do |c, i|
   sum.each_key do |offset|

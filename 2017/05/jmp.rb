@@ -17,9 +17,11 @@ def run_program!(program)
   return steps
 end
 
+# Part 1
 part1_steps = run_program!(program.clone) { |val| val + 1 }
 puts "Steps in always increasing mode: #{part1_steps}"
 
+# Part 2
 part2_steps = run_program!(program.clone) do |val|
   if val >= 3
     val - 1

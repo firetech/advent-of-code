@@ -23,5 +23,8 @@ lines.each do |line|
   end
 end
 
+# Part 1
 puts "#{valid1} passwords without repeated words"
+
+# Part 2
 puts "#{valid2} passwords without repeated anagrams"

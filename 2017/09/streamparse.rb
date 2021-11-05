@@ -57,5 +57,8 @@ if offset < stream.length
   raise "Outer group ended before stream"
 end
 
+# Part 1
 puts "Total score: #{score}"
+
+# Part 2
 puts "Garbage characters: #{garbage}"

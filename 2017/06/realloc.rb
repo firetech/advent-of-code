@@ -28,5 +28,8 @@ while not seen.include?(banks)
   cycles += 1
 end
 
+# Part 1
 puts "Cycles until seen state: #{cycles}"
+
+# Part 2
 puts "Loop size: #{cycles - seen[banks]}"

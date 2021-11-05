@@ -23,5 +23,8 @@ input.split("\n").each do |line|
   end
 end
 
+# Part 1
 puts "Max at end of program: #{regs.values.max}"
+
+# Part 2
 puts "Seen maximum: #{seen_max}"
