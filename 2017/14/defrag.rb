@@ -39,7 +39,7 @@ group = 0
       # I love the smell of BFS in the morning :P
       queue = [[x, y]]
       while not queue.empty?
-        qx, qy = queue.pop
+        qx, qy = queue.shift
         [[0, -1], [-1, 0], [1, 0], [0, 1]].each do |dx, dy|
           px, py = qx+dx, qy+dy
           if (0...128).include?(px) and (0...128).include?(py) and @grid[py][px]

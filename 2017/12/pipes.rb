@@ -21,7 +21,7 @@ def visit_group(start_node)
   visited = Set[]
   queue = [start_node]
   while not queue.empty?
-    current = queue.pop
+    current = queue.shift
     visited << current
     @nodes[current].each do |node|
       if not visited.include?(node)
