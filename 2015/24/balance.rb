@@ -7,8 +7,7 @@ def best_qe(groups)
   target_weight = @input.inject(0) { |sum, x| sum + x } / groups
 
   n = (target_weight / @input.max.to_f).ceil.to_i
-  group1 = nil
-  while group1.nil?
+  loop do
     qe = []
     @input.combination(n) do |group|
       if group.inject(0) { |sum, x| sum + x } == target_weight
