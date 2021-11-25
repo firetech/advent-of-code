@@ -13,7 +13,7 @@ File.read(file).strip.split("\n\n").each do |block|
     raise "Malformed tile header: '#{header}'"
   end
   matrix = lines.map(&:chars)
-	# All borders are read clockwise
+  # All borders are read clockwise
   tile_borders = [
     matrix.first.join,                            # Top border
     matrix.map { |line| line.last }.join,         # Right border
@@ -22,7 +22,7 @@ File.read(file).strip.split("\n\n").each do |block|
   ]
   tiles[tile] = matrix[1..-2].map { |line| line[1..-2] } # Remove borders
   borders[tile] = tile_borders
-	tile_borders.each_with_index do |border, edge|
+  tile_borders.each_with_index do |border, edge|
     border_tiles[border] ||= []
     border_tiles[border] << [tile, edge, false]
     rev_border = border.reverse
@@ -136,7 +136,7 @@ found = false
       if lines[l-1] =~ /\A.{#{p}}..................#./ and lines[l+1] =~ /\A.{#{p}}.#..#..#..#..#..#.../
         monsters += 1
       end
-			p += 20
+      p += 20
     end
   end
   if monsters > 0
