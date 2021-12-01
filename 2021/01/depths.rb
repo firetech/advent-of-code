@@ -3,10 +3,10 @@ file = 'input'
 
 larger = 0
 last = nil
-windows = [[], [], []]
+window = []
 larger_windows = 0
 last_window = nil
-File.read(file).strip.split("\n").each do |line|
+File.read(file).strip.split("\n").each_with_index do |line|
   this = line.to_i
 
   # Part 1
@@ -16,16 +16,14 @@ File.read(file).strip.split("\n").each do |line|
   last = this
 
   # Part 2
-  windows.each do |window|
-    window << this
-    if window.length == 3
-      sum = window.sum
-      if not last_window.nil? and sum > last_window
-        larger_windows += 1
-      end
-      last_window = sum
-      window.shift
+  window << this
+  if window.length == 3
+    sum = window.sum
+    if not last_window.nil? and sum > last_window
+      larger_windows += 1
     end
+    last_window = sum
+    window.shift
   end
 end
 
