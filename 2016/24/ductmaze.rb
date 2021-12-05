@@ -43,12 +43,6 @@ end
   @poi_to_poi[p] = poi
 end
 
-
-def reachable_poi(from_poi, passed)
-  poi = []
-  return poi
-end
-
 def min_steps(return_to_0 = false, from_poi = 0, passed = Set[from_poi], cache = {})
   cache_key = [from_poi, passed.sort.join]
   if not cache.has_key?(cache_key)
