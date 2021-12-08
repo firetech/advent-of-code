@@ -34,7 +34,7 @@ winning_board = nil
     last_boards = boards
     boards = boards.reject { |board| check_board(board, drawn) }
     if boards.empty?
-      raise "Multiple last winners" if boards.length > 1
+      raise "Multiple last winners" if last_boards.length > 1
       print "Score of last winning board: "
       print_score(last_boards.first, drawn, n)
       break
