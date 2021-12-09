@@ -5,6 +5,7 @@ file = 'input'
   line.chars.map(&:to_i)
 end
 
+# Part 1
 xrange = (0...@map.first.length)
 yrange = (0...@map.length)
 risk = 0
@@ -13,11 +14,7 @@ low_points = []
   line.each_with_index do |val, x|
     low = [[0, -1], [0, 1], [-1, 0], [1, 0]].all? do |dx, dy|
       px, py = x + dx, y + dy
-      if xrange.include?(px) and yrange.include?(py)
-        @map[py][px] > val
-      else
-        true
-      end
+      not (xrange.include?(px) and yrange.include?(py)) or @map[py][px] > val
     end
     if low
       low_points << [x, y]
@@ -28,20 +25,23 @@ end
 
 puts "Risk level: #{risk}"
 
+# Part 2
 @basin_map = {}
+@basin_size = Hash.new(0)
 queue = low_points.map.with_index { |(x, y), i| [x, y, i] }
 queue.each do |x, y, basin|
   @basin_map[[x, y]] = basin
+  @basin_size[basin] += 1
 end
 while not queue.empty?
   x, y, basin = queue.shift
   [[0, -1], [0, 1], [-1, 0], [1, 0]].each do |dx, dy|
     px, py = x + dx, y + dy
-    next unless xrange.include?(px) and yrange.include?(py)
-    if @map[py][px] < 9
+    if xrange.include?(px) and yrange.include?(py) and @map[py][px] < 9
       current_basin = @basin_map[[px, py]]
       if current_basin.nil?
         @basin_map[[px, py]] = basin
+        @basin_size[basin] += 1
         queue << [px, py, basin]
       elsif current_basin != basin
         raise "Unexpected basin merge"
@@ -50,8 +50,5 @@ while not queue.empty?
   end
 end
 
-@basin_size = Hash.new(0)
-@basin_map.each_value { |basin| @basin_size[basin] += 1 }
-basin_product = @basin_size.values.sort.reverse.first(3).inject(:*)
-
+basin_product = @basin_size.values.sort.last(3).inject(:*)
 puts "Product of sizes of three largest basins: #{basin_product}"
