@@ -163,7 +163,7 @@ def fight(elf_power = BASE_ATK, base_fight = true)
     complete_rounds,
     outcome
   ]
-  return winners == 'E', entities, outcome
+  return winners == 'E', outcome
 end
 
 # Part 1
@@ -176,7 +176,7 @@ puts 'Searching for minimum elf power for full survival...'
 results = {}
 min_power = (BASE_ATK+1..HP).bsearch do |p|
   print "Attack power #{p}: "
-  win, entities, outcome = fight(p, false)
+  win, outcome = fight(p, false)
   results[p] = outcome
   win
 end
