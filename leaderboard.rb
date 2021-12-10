@@ -53,7 +53,11 @@ def usage(spacer = true)
 end
 
 def name(m)
-  m['name'] or "(##{m['id']})"
+  n = (m['name'] or "(##{m['id']})")
+  if n.length > 25
+    n = "#{n[0,22]}..."
+  end
+  return n
 end
 
 def print_table(table)
