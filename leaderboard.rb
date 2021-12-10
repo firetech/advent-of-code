@@ -67,15 +67,23 @@ def name(m)
   return n
 end
 
-def print_table(table)
-  length = Array.new(table.first.length, 0)
+def print_table(titles, table, alignment)
+  length = titles.map(&:length)
   table.each do |line|
     line.each_with_index { |v, i| length[i] = [length[i], v.to_s.length].max }
   end
+  alignment.each_with_index { |a, i| length[i] = - length[i] if a == :l }
+  title = ''
+  titles.each_with_index do |t, i|
+    title << '  ' unless i == 0
+    title << "%#{length[i]}s" % t
+  end
+  puts title
+  puts '-' * title.length
   table.each do |line|
     line.each_with_index do |v, i|
       print '  ' unless i == 0
-      print "%-#{length[i]}s" % v
+      print "%#{length[i]}s" % v
     end
     puts
   end
@@ -134,7 +142,7 @@ if not $stars.empty?
       t = m['completion_day_level'][day.to_s][star.to_s]['get_star_ts']
       [ i+1, name(m), Time.at(t).strftime('%Y-%m-%d %H:%M:%S') ]
     end
-    print_table(table)
+    print_table(['#', 'Name', 'Timestamp'], table, [:r, :l, :l])
   end
 
 elsif $delta
@@ -146,17 +154,13 @@ elsif $delta
     delta_time = delta_days.sum do |stars|
       stars['2']['get_star_ts'] - stars['1']['get_star_ts']
     end
-    [
-      name(m),
-      m['stars'],
-      delta_time
-    ]
+    [name(m), m['stars'], delta_time]
   end
   table.sort! do |(_, a_stars, a_time), (_, b_stars, b_time)|
     a_stars == b_stars ? a_time <=> b_time : b_stars <=> a_stars
   end
   table = table.first($top) unless $top.nil?
-  table.map! do |name, stars, time|
+  table.map!.with_index do |(name, stars, time), i|
     if time > 0
       hours, seconds = time / 3600, time % 3600
       minutes, seconds = seconds / 60, seconds % 60
@@ -164,16 +168,17 @@ elsif $delta
     else
       table_time = nil
     end
-    [name, stars, table_time]
+    [i+1, name, stars, table_time]
   end
-  print_table([['NAME', 'STARS', 'DELTA TIME'], *table])
+  print_table(['#', 'Name', '*', 'Delta Time'], table, [:r, :l, :r, :l])
 
 else
   # Print table of solve times per star (with at least one solve)
   members.sort_by! { |m| -m['local_score'] }
   members = members.first($top) unless $top.nil?
   days = members.flat_map { |m| m['completion_day_level'].keys }.uniq
-  table = [[ ' * ', *members.map { |m| name(m) } ]]
+  titles = [' * ', *members.map { |m| name(m) }]
+  table = []
   days.sort_by(&:to_i).each do |day|
     1.upto(2) do |star|
       member_times = members.map do |m|
@@ -185,8 +190,8 @@ else
           ''
         end
       end
-      table << [ "#{day}-#{star}", *member_times ]
+      table << ["#{day}-#{star}", *member_times]
     end
   end
-  print_table(table)
+  print_table(titles, table, [:r] + [:l] * (table.first.length-1))
 end
