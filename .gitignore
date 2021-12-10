@@ -1,3 +1,7 @@
+# Session file for fetch_input.rb
+/.session
+# JSON files for leaderboard.rb
+/*.json
 # Backup files
 .*.sw?
 *~

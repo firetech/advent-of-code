@@ -41,7 +41,7 @@ $opts = OptionParser.new do |opts|
     $filter = f
   end
 
-  opts.on_tail('-h', '--help', 'Print this help.') do
+  opts.on_tail('-h', '--help', 'Print this help and exit.') do
     usage(false)
   end
 end
