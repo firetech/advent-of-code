@@ -8,6 +8,7 @@ require 'json'
 
 # Parse command line arguments
 $stars = []
+$delta = false
 $top = nil
 $include_empty = false
 $filter = nil
@@ -21,12 +22,18 @@ $opts = OptionParser.new do |opts|
   opts.separator 'Options:'
 
 
-  opts.on('-s', '--star=DAY-STAR', 'Show individual leaderboard for DAY-STAR. Can be specified multiple times') do |s|
+  opts.on('-s', '--star=DAY-STAR', 'Show individual leaderboard for DAY-STAR. Can be specified multiple times.') do |s|
+    raise "--star is not compatible with --delta" if $delta
     if s =~ /\A(\d+)-([1-2])\z/
       $stars << [Regexp.last_match(1).to_i, Regexp.last_match(2).to_i]
     else
       raise "Invalid star: '#{s}'"
     end
+  end
+
+  opts.on('-d', '--delta', 'Show leaderboard based on sum of time between part 1 solve and part 2 solve.') do
+    raise "--delta is not compatible with --star" unless $stars.empty?
+    $delta = true
   end
 
   opts.on('-t', '--top=TOP', 'Limit to top TOP players.') do |t|
@@ -63,7 +70,7 @@ end
 def print_table(table)
   length = Array.new(table.first.length, 0)
   table.each do |line|
-    line.each_with_index { |v, i| length[i] = [length[i], v.length].max }
+    line.each_with_index { |v, i| length[i] = [length[i], v.to_s.length].max }
   end
   table.each do |line|
     line.each_with_index do |v, i|
@@ -106,7 +113,62 @@ if $filter
   members.select! { |m| eval($filter) }
 end
 
-if $stars.empty?
+if not $stars.empty?
+  # Print toplist for each supplied star
+  $stars.each_with_index do |(day, star), index|
+    puts if index > 0
+    if $stars.length > 1
+      title = "Star #{day}-#{star}"
+      puts title
+      puts '=' * title.length
+    end
+    table_members = members.select do |m|
+      m['completion_day_level'].has_key?(day.to_s) and
+        m['completion_day_level'][day.to_s].has_key?(star.to_s)
+    end
+    table_members.sort_by! do |m|
+      m['completion_day_level'][day.to_s][star.to_s]['get_star_ts']
+    end
+    table_members = table_members.first($top) unless $top.nil?
+    table = table_members.map.with_index do |m, i|
+      t = m['completion_day_level'][day.to_s][star.to_s]['get_star_ts']
+      [ i+1, name(m), Time.at(t).strftime('%Y-%m-%d %H:%M:%S') ]
+    end
+    print_table(table)
+  end
+
+elsif $delta
+  # Print "delta" (sum of part 2 time - part 1 time) toplist
+  table = members.map do |m|
+    delta_days = m['completion_day_level'].values.select do |stars|
+      stars.length > 1
+    end
+    delta_time = delta_days.sum do |stars|
+      stars['2']['get_star_ts'] - stars['1']['get_star_ts']
+    end
+    [
+      name(m),
+      m['stars'],
+      delta_time
+    ]
+  end
+  table.sort! do |(_, a_stars, a_time), (_, b_stars, b_time)|
+    a_stars == b_stars ? a_time <=> b_time : b_stars <=> a_stars
+  end
+  table = table.first($top) unless $top.nil?
+  table.map! do |name, stars, time|
+    if time > 0
+      hours, seconds = time / 3600, time % 3600
+      minutes, seconds = seconds / 60, seconds % 60
+      table_time = '%i:%02i:%02i' % [ hours, minutes, seconds]
+    else
+      table_time = nil
+    end
+    [name, stars, table_time]
+  end
+  print_table([['NAME', 'STARS', 'DELTA TIME'], *table])
+
+else
   # Print table of solve times per star (with at least one solve)
   members.sort_by! { |m| -m['local_score'] }
   members = members.first($top) unless $top.nil?
@@ -127,28 +189,4 @@ if $stars.empty?
     end
   end
   print_table(table)
-else
-
-  # Print toplist for each supplied star
-  $stars.each_with_index do |(day, star), index|
-    puts if index > 0
-    if $stars.length > 1
-      title = "Star #{day}-#{star}"
-      puts title
-      puts '=' * title.length
-    end
-    table_members = members.select do |m|
-      m['completion_day_level'].has_key?(day.to_s) and
-        m['completion_day_level'][day.to_s].has_key?(star.to_s)
-    end
-    table_members.sort_by! do |m|
-      m['completion_day_level'][day.to_s][star.to_s]['get_star_ts']
-    end
-    table_members = table_members.first($top) unless $top.nil?
-    table = table_members.map.with_index do |m, i|
-      t = m['completion_day_level'][day.to_s][star.to_s]['get_star_ts']
-      [ (i + 1).to_s, name(m), Time.at(t).strftime('%Y-%m-%d %H:%M:%S') ]
-    end
-    print_table(table)
-  end
 end
