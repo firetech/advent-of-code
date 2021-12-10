@@ -105,12 +105,10 @@ end
 if $stars.empty?
   # Print table of solve times per star (with at least one solve)
   members.sort_by! { |m| -m['local_score'] }
-  unless $top.nil?
-    members = members.first($top)
-  end
-  days = members.flat_map { |m| m['completion_day_level'].keys }.uniq.sort
+  members = members.first($top) unless $top.nil?
+  days = members.flat_map { |m| m['completion_day_level'].keys }.uniq
   table = [[ ' * ', *members.map { |m| name(m) } ]]
-  days.each do |day|
+  days.sort_by(&:to_i).each do |day|
     1.upto(2) do |star|
       member_times = members.map do |m|
         if m['completion_day_level'].has_key?(day.to_s) and
@@ -135,17 +133,17 @@ else
       puts title
       puts '=' * title.length
     end
-    table = members.select do |m|
+    table_members = members.select do |m|
       m['completion_day_level'].has_key?(day.to_s) and
         m['completion_day_level'][day.to_s].has_key?(star.to_s)
     end
-    table.map! do |m|
-      t = m['completion_day_level'][day.to_s][star.to_s]['get_star_ts']
-      [ name(m), Time.at(t).strftime('%Y-%m-%d %H:%M:%S') ]
+    table_members.sort_by! do |m|
+      m['completion_day_level'][day.to_s][star.to_s]['get_star_ts']
     end
-    table.sort_by!(&:last)
-    unless $top.nil?
-      table = table.first($top)
+    table_members = table_members.first($top) unless $top.nil?
+    table = table_members.map.with_index do |m, i|
+      t = m['completion_day_level'][day.to_s][star.to_s]['get_star_ts']
+      [ (i + 1).to_s, name(m), Time.at(t).strftime('%Y-%m-%d %H:%M:%S') ]
     end
     print_table(table)
   end
