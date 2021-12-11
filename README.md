@@ -21,3 +21,7 @@ Parses private leaderboard JSON data and outputs some interesting statisticts:
 * Individual top list for each star.
 * A matrix of players and their solution times for each star.
 * A top list that sorts players (with the same amount of stars) on the total time taken between solving part 1 and part 2 for each day. Can easily be gamed with multiple accounts, but doesn't require people to start working on the puzzles immediately when they unlock.
+
+skeleton.rb
+-----------
+My starting point for each puzzle. Contains the stuff I mostly add to my solutions.
