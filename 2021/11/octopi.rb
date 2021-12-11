@@ -1,5 +1,3 @@
-require 'set'
-
 file = 'input'
 #file = 'example1'
 #file = 'example2'
@@ -24,7 +22,7 @@ while i < 100 or all_synced < 0
       new_level
     end
   end
-  flashed = Set[]
+  flashed = []
   while not flashing.empty?
     x, y = flashing.shift
     flashed << [x, y]
