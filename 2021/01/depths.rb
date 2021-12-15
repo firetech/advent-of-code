@@ -6,7 +6,7 @@ last = nil
 window = []
 larger_windows = 0
 last_window = nil
-File.read(file).strip.split("\n").each_with_index do |line|
+File.read(file).strip.split("\n").each do |line|
   this = line.to_i
 
   # Part 1
