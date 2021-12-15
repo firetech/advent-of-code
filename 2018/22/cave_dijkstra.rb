@@ -67,10 +67,8 @@ dist = Hash.new(Float::INFINITY)
 dist[start] = 0
 queue = PriorityQueue.new
 queue.push(start, 0)
-visited = Set[]
 until queue.empty?
   state = queue.pop_min
-  visited << state
 
   pos, tool = state
   if pos == @target and tool == :torch
@@ -84,15 +82,11 @@ until queue.empty?
     tools = TOOLS[get_risk(npos)] & TOOLS[get_risk(pos)]
     tools.each do |ntool|
       nstate = [npos, ntool]
-      next if visited.include?(nstate)
       ndist = this_dist + (ntool == tool ? 1 : 8)
-      stored_ndist = dist[nstate]
-      if ndist < stored_ndist
+      if ndist < dist[nstate]
         dist[nstate] = ndist
-      else
-        ndist = stored_ndist
+        queue.push(nstate, ndist)
       end
-      queue.push(nstate, ndist)
     end
   end
 end

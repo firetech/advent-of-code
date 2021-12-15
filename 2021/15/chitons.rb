@@ -1,4 +1,3 @@
-require 'set'
 require '../../lib/priority_queue'
 
 file = 'input'
@@ -16,10 +15,8 @@ def dijkstra(map)
   dist[start] = 0
   queue = PriorityQueue.new
   queue.push(start, 0)
-  visited = Set[]
   until queue.empty?
     pos = queue.pop_min
-    visited << pos
 
     if pos == target
       return dist[target]
@@ -29,15 +26,11 @@ def dijkstra(map)
     [ -1i, 1i, -1, 1 ].each do |delta|
       npos = pos + delta
       next unless x_range.include?(npos.real) and y_range.include?(npos.imag)
-      next if visited.include?(npos)
       ndist = this_dist + map[npos.imag][npos.real]
-      stored_ndist = dist[npos]
-      if ndist < stored_ndist
+      if ndist < dist[npos]
         dist[npos] = ndist
-      else
-        ndist = stored_ndist
+        queue.push(npos, ndist)
       end
-      queue.push(npos, ndist)
     end
   end
 end
