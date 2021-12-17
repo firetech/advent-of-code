@@ -25,20 +25,16 @@ puts "Highest Y value reached: #{vy_max * (vy_max + 1) / 2}"
 def simulate(x_vel, y_vel)
   x, y = 0, 0
   last_x = x
-  while x_vel != 0 and x <= @target_x.max
+  while x <= @target_x.max and y >= @target_y.min
     x += x_vel
     y += y_vel
+    return true if @target_x.include?(x) and @target_y.include?(y)
     x_vel -= 1 if x_vel > 0
     # A negative X velocity would never end up in range, no need to handle that.
-    y_vel -= 1
-    return true if @target_x.include?(x) and @target_y.include?(y)
-  end
-  return false unless @target_x.include?(x)
-  while y > @target_y.max
-    y += y_vel
+    return false if x_vel == 0 and x < @target_x.min
     y_vel -= 1
   end
-  return @target_y.include?(y)
+  return false
 end
 
 # The lower bound for x velocity is the first sum of integers from 1 to x that
