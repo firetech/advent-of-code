@@ -52,7 +52,7 @@ puts "Total risk level: #{sum}"
 
 # Part 2
 require 'set'
-require '../../lib/priority_queue'
+require_relative '../../lib/priority_queue'
 
 TOOLS = {
   0 => Set[:climbing, :torch], # Rocky

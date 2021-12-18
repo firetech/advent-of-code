@@ -1,4 +1,4 @@
-require '../../lib/priority_queue'
+require_relative '../../lib/priority_queue'
 
 file = 'input'
 #file = 'example1'
