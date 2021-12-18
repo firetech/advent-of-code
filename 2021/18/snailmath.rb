@@ -3,81 +3,85 @@ file = 'input'
 #file = 'example2'
 #file = 'example3'
 
+def parse(str)
+  depth = -1
+  num = ''
+  list = []
+  str.each_char do |c|
+    case c
+    when '['
+      depth += 1
+    when ',', ']'
+      list << [num.to_i, depth] unless num.empty?
+      num = ''
+      depth -= 1 if c == ']'
+    when /\A\d\z/
+      num << c
+    else
+      raise "Unexpected character '#{c}'"
+    end
+  end
+  return list
+end
+
 def add(a, b)
-  reduce([a,b])
+  return reduce((a + b).map { |num, depth| [num, depth + 1] })
 end
 
 def reduce(x)
   loop do
-    did_explode, x = explode(x)
+    did_explode = explode(x)
     next if did_explode
-    did_split, x = split(x)
+    did_split = split(x)
     break unless did_split
   end
   return x
 end
 
-def explode(x, parents = 0)
-  if x.is_a?(Array)
-    left, right = x
-    if parents < 4
-      did_explode, new_left, l_add, r_add = explode(left, parents + 1)
-      return true, [new_left, add_right(right, r_add)], l_add, 0 if did_explode
-      did_explode, new_right, l_add, r_add = explode(right, parents + 1)
-      return true, [add_left(left, l_add), new_right], 0, r_add if did_explode
-    else
-      return true, 0, left, right
+def explode(x)
+  x.each_with_index do |(left_num, depth), i|
+    if depth >= 4
+      right_num, right_depth = x[i+1]
+      raise "Depth mismatch" if right_depth != depth
+      x[i-1][0] += left_num if i > 0
+      x[i+2][0] += right_num if i < x.length - 2
+      x[i, 2] = [[0, depth - 1]]
+      return true
     end
   end
-  return false, x, 0, 0
-end
-
-def add_left(x, add)
-  return x if add == 0
-  if x.is_a?(Array)
-    left, right = x
-    return [left, add_left(right, add)]
-  else
-    return x + add
-  end
-end
-
-def add_right(x, add)
-  return x if add == 0
-  if x.is_a?(Array)
-    left, right = x
-    return [add_right(left, add), right]
-  else
-    return x + add
-  end
+  return false
 end
 
 def split(x)
-  if x.is_a?(Array)
-    left, right = x
-    did_split, new_left = split(left)
-    return true, [new_left, right] if did_split
-    did_split, new_right = split(right)
-    return true, [left, new_right] if did_split
-  else
-    if x >= 10
-      new_x = x / 2
-      return true, [new_x, new_x + (x.odd? ? 1 : 0)]
+  x.each_with_index do |(num, depth), i|
+    if num >= 10
+      s_num = num / 2
+      s_depth = depth + 1
+      x[i, 1] = [[s_num, s_depth], [s_num + (num.odd? ? 1 : 0), s_depth]]
+      return true
     end
   end
-  return false, x
+  return false
 end
 
 def magnitude(x)
-  if x.is_a?(Array)
-    left, right = x
-    return 3 * magnitude(left) + 2 * magnitude(right)
-  else
-    return x
+  3.downto(0) do |depth|
+    i = 0
+    while i < x.length - 1
+      left_num, left_depth = x[i]
+      if left_depth == depth
+        right_num, right_depth = x[i+1]
+        raise "Depth mismatch" if right_depth != left_depth
+        x[i, 2] = [[left_num * 3 + right_num * 2, depth - 1]]
+      end
+      i += 1
+    end
   end
+  raise "Unexpected result" if x.length > 1 or x.first.last != -1
+  return x.first.first
 end
 
-@numbers = File.read(file).strip.split("\n").map { |line| eval(line) }
+@numbers = File.read(file).strip.split("\n").map { |line| parse(line) }
 
 
 # Part 1
