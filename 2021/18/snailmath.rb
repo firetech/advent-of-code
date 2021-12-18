@@ -79,6 +79,7 @@ end
 
 @numbers = File.read(file).strip.split("\n").map { |line| eval(line) }
 
+
 # Part 1
 x = @numbers.first
 @numbers[1..-1].each do |n|
@@ -86,9 +87,36 @@ x = @numbers.first
 end
 puts "Magnitude of final sum: #{magnitude(x)}"
 
+
 # Part 2
-max = 0
-@numbers.combination(2) do |a, b|
-  max = [magnitude(add(a,b)), magnitude(add(b,a)), max].max
+require_relative '../../lib/multicore'
+
+stop = nil
+begin
+  t = Time.now
+  input, output, stop = Multicore.run do |worker_in, worker_out, t, _|
+    loop do
+      a, b = worker_in[]
+      break if a.nil?
+      worker_out[magnitude(add(a,b))]
+    end
+  end
+  num_combs = 0
+  @numbers.combination(2) do |a, b|
+    input << [a, b]
+    input << [b, a]
+    num_combs += 2
+  end
+  input.close
+  max = 0
+  num_combs.times do
+    magnitude = output.pop
+    raise "Worker returned nil" if magnitude.nil?
+    max = magnitude if magnitude > max
+  end
+  raise "Unexpected output" unless output.empty?
+  puts "Part 2 calculation time: #{(Time.now - t).round(2)}s"
+  puts "Largest magnitude: #{max}"
+ensure
+  stop[] unless stop.nil?
 end
-puts "Largest magnitude: #{max}"
