@@ -11,7 +11,7 @@ end
 @image = Hash.new(false)
 input_str.split("\n").each_with_index do |line, y|
   line.each_char.with_index do |c, x|
-    @image[[x, y]] = true if c == '#'
+    @image[y << 16 | x] = true if c == '#'
   end
 end
 
@@ -25,17 +25,24 @@ def enhance(image, input_void = false)
   void = @algo[(input_void ? 511 : 0)]
   fill = !void
   new_image = Hash.new(void)
-  keys = image.keys
-  xs = keys.map(&:first)
-  ys = keys.map(&:last)
-  (ys.min - 1).upto(ys.max + 1) do |y|
-    (xs.min - 1).upto(xs.max + 1) do |x|
+  min_x = 0; max_x = 0
+  min_y = 0; max_y = 0
+  image.each_key do |key|
+    x = key & 0xFFFF
+    min_x = x - 1 if x <= min_x
+    max_x = x + 1 if x >= max_x
+    y = key >> 16
+    min_y = y - 1 if y <= min_y
+    max_y = y + 1 if y >= max_y
+  end
+  min_y.upto(max_y) do |y|
+    min_x.upto(max_x) do |x|
       v = 0
       NEIGHBOURS.each do |dx, dy|
         v <<= 1
-        v |= 1 if image[[x + dx, y + dy]]
+        v |= 1 if image[(y + dy) << 16 | (x + dx)]
       end
-      new_image[[x, y]] = fill if @algo[v] == fill
+      new_image[(y - min_y) << 16 | (x - min_x)] = fill if @algo[v] == fill
     end
   end
   return new_image, void
