@@ -15,35 +15,30 @@ input_str.split("\n").each_with_index do |line, y|
   end
 end
 
-def enhance(image, pad)
-  new_image = Hash.new(false)
+NEIGHBOURS = [
+  [-1, -1], [0, -1], [1, -1],
+  [-1,  0], [0,  0], [1,  0],
+  [-1,  1], [0,  1], [1,  1]
+]
+
+def enhance(image, input_void = false)
+  void = @algo[(input_void ? 511 : 0)]
+  fill = !void
+  new_image = Hash.new(void)
   keys = image.keys
   xs = keys.map(&:first)
   ys = keys.map(&:last)
-  # Account for infinite light pixels on odd iterations
-  padding = pad ? 3 : -1
-  (ys.min - padding).upto(ys.max + padding) do |y|
-    (xs.min - padding).upto(xs.max + padding) do |x|
+  (ys.min - 1).upto(ys.max + 1) do |y|
+    (xs.min - 1).upto(xs.max + 1) do |x|
       v = 0
-      [
-        [-1, -1],
-        [ 0, -1],
-        [ 1, -1],
-        [-1,  0],
-        [ 0,  0],
-        [ 1,  0],
-        [-1,  1],
-        [ 0,  1],
-        [ 1,  1]
-      ].each do |dx, dy|
-        px, py = x + dx, y + dy
+      NEIGHBOURS.each do |dx, dy|
         v <<= 1
-        v |= 1 if image[[px, py]]
+        v |= 1 if image[[x + dx, y + dy]]
       end
-      new_image[[x, y]] = true if @algo[v]
+      new_image[[x, y]] = fill if @algo[v] == fill
     end
   end
-  return new_image
+  return new_image, void
 end
 
 ITERATIONS = [
@@ -52,9 +47,11 @@ ITERATIONS = [
 ]
 
 image = @image
-2.step(ITERATIONS.max, 2) do |steps|
-  image = enhance(enhance(image, true), false)
+void = false
+1.upto(ITERATIONS.max) do |steps|
+  image, void = enhance(image, void)
   if ITERATIONS.include?(steps)
+    raise "Infinite lit pixels" if void
     puts "Lit pixels after #{steps} iterations: #{image.count}"
   end
 end
