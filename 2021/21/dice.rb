@@ -42,30 +42,36 @@ OUTCOMES = Hash.new(0)  # Roll total => number of universes
 [1,2,3].repeated_permutation(3).map(&:sum).each do |roll|
   OUTCOMES[roll] += 1
 end
-@wins = [0, 0]
-states = { [0, *@start_pos, 0, 0] => 1 }
-until states.empty?
-  new_states = Hash.new(0)
-  states.each do |(player, pos0, pos1, score0, score1), count|
-    OUTCOMES.each do |move, move_count|
-      total_count = count * move_count
-      if player == 0
-        new_pos, new_score = round(pos0, score0, move)
-      else
-        new_pos, new_score = round(pos1, score1, move)
-      end
-      if new_score >= 21
-        @wins[player] += total_count
-      else
-        if player == 0
-          new_state = [1, new_pos, pos1, new_score, score1]
-        else
-          new_state = [0, pos0, new_pos, score0, new_score]
-        end
-        new_states[new_state] += total_count
-      end
-    end
-  end
-  states = new_states
+
+def hash(pos0, pos1, player, score0, score1)
+  # 4 bits     4 bits       1 bit          5 bits        5 bits
+  pos0 << 15 | pos1 << 11 | player << 10 | score0 << 5 | score1
 end
-puts "Most universes won in: #{@wins.max}"
+
+@cache = {}
+def quantum_game(pos0, pos1, player = 0, score0 = 0, score1 = 0)
+  if score0 >= 21
+    return [1, 0]
+  elsif score1 >= 21
+    return [0, 1]
+  end
+  state = hash(pos0, pos1, player, score0, score1)
+  result = @cache[state]
+  if result.nil?
+    result = [0, 0]
+    OUTCOMES.each do |move, move_count|
+      if player == 0
+        new_pos0, new_score0 = round(pos0, score0, move)
+        this_result = quantum_game(new_pos0, pos1, 1, new_score0, score1)
+      else
+        new_pos1, new_score1 = round(pos1, score1, move)
+        this_result = quantum_game(pos0, new_pos1, 0, score0, new_score1)
+      end
+      result.map!.with_index { |x, i| x + move_count * this_result[i] }
+    end
+    @cache[state] = result
+  end
+  return result
+end
+
+puts "Most universes won in: #{quantum_game(*@start_pos).max}"
