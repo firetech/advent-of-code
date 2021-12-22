@@ -77,48 +77,56 @@ class Cuboid
   end
 end
 
-PART1_BOUNDARY = Cuboid.new(-50, 51, -50, 51, -50, 51)
-
-@part1_cuboids = Set[]
-@part2_cuboids = Set[]
+@cuboids = []
 File.read(file).strip.split("\n").each do |line|
   case line
   when /\A(on|off) x=(-?\d+)..(-?\d+),y=(-?\d+)..(-?\d+),z=(-?\d+)..(-?\d+)\z/
-    on = Regexp.last_match(1) == 'on'
-    x_min, x_max = Regexp.last_match(2).to_i, Regexp.last_match(3).to_i + 1
-    y_min, y_max = Regexp.last_match(4).to_i, Regexp.last_match(5).to_i + 1
-    z_min, z_max = Regexp.last_match(6).to_i, Regexp.last_match(7).to_i + 1
-    new_cuboid = Cuboid.new(x_min, x_max, y_min, y_max, z_min, z_max)
-    [
-      [@part1_cuboids, PART1_BOUNDARY],
-      [@part2_cuboids, nil]
-    ].each do |cuboids, boundary|
-      target_cuboid = new_cuboid
-      unless boundary.nil?
-        target_cuboid = boundary.intersection(target_cuboid)
-        next if target_cuboid.nil?
-      end
-      cuboids.to_a.each do |cuboid|
-        # Slice up intersection into smaller cuboids, add all slices that only
-        # intersect with the old cuboid
-        slices = cuboid.slice_with(target_cuboid)
-        next if slices.empty?
-        cuboids.delete(cuboid)
-        slices.each do |slice|
-          if cuboid.intersects?(slice) and not target_cuboid.intersects?(slice)
-            cuboids << slice
-          end
-        end
-      end
-      cuboids << target_cuboid if on
-    end
+    @cuboids << [
+      Regexp.last_match(1) == 'on',
+      Cuboid.new(
+        Regexp.last_match(2).to_i,
+        Regexp.last_match(3).to_i + 1,  # Input is inclusive, Cuboid is not.
+        Regexp.last_match(4).to_i,
+        Regexp.last_match(5).to_i + 1,  # Ditto.
+        Regexp.last_match(6).to_i,
+        Regexp.last_match(7).to_i + 1   # ...and ditto.
+      )
+    ]
   else
     raise "Malformed line: '#{line}'"
   end
 end
 
+def reboot_reactor(boundary = nil)
+  on_cuboids = Set[]
+  @cuboids.each do |on, input_cuboid|
+    target_cuboid = input_cuboid
+    unless boundary.nil?
+      target_cuboid = boundary.intersection(target_cuboid)
+      next if target_cuboid.nil?
+    end
+    on_cuboids.to_a.each do |cuboid| # .to_a is cheap clone (for modification)
+      # Slice up intersection into smaller cuboids, add all slices that only
+      # intersect with the old cuboid
+      slices = cuboid.slice_with(target_cuboid)
+      next if slices.empty?
+      on_cuboids.delete(cuboid)
+      slices.each do |slice|
+        if cuboid.intersects?(slice) and not target_cuboid.intersects?(slice)
+          on_cuboids << slice
+        end
+      end
+    end
+    on_cuboids << target_cuboid if on
+  end
+  return on_cuboids.sum(&:size)
+end
+
 # Part 1
-puts "Cubes on in initialization region: #{@part1_cuboids.sum(&:size)}"
+# Since the upper limit is not exclusive, we need to use 51 instead of 50 here.
+part1_on = reboot_reactor(Cuboid.new(-50, 51, -50, 51, -50, 51))
+puts "Cubes on in initialization region: #{part1_on}"
 
 # Part 2
-puts "Cubes on in entire space: #{@part2_cuboids.sum(&:size)}"
+part2_on = reboot_reactor
+puts "Cubes on in entire space: #{part2_on}"
