@@ -37,6 +37,7 @@ score = 0
 end
 puts "Syntax error score: #{score}"
 
+# Part 2
 MISSING_SCORE = {
   ')' => 1,
   ']' => 2,
