@@ -56,30 +56,76 @@ def run(input)
   return regs[:z]
 end
 
-# See reverse_engineer file for logic.
-limits = [
-  1..3,  # i14 == i1+6 limits i1 to 1..3
-  3..9,  # i13 == i2-2 limits i2 to 3..9
-  1..4,  # i12 == i3+5 limits i3 to 1..4
-  6..9,  # i5 == i4-5 limits i4 to 6..9
-  1..4,  # i5 == i4-5 limits i5 to 1..4
-  1..1,  # i11 == i6+8 limits i6 to 1
-  5..9,  # i8 == i7-4 limits i7 to 5..9
-  1..5,  # i8 == i7-4 limits i8 to 1..5
-  1..7,  # i10 == i9+2 limits i9 to 1..7
-  3..9,  # i10 == i9+2 limits i9 to 3..9
-  9..9,  # i11 == i6+8 limits i11 to 9
-  6..9,  # i12 == i3+5 limits i12 to 6..9
-  1..7,  # i13 == i2-2 limits i13 to 1..7
-  7..9,  # i14 == i1+6 limits i14 to 7..9
-]
+def check_line(input_line, expected_line)
+  match = false
+  if input_line.length == expected_line.length
+    match = input_line.zip(expected_line).all? do |inp, exp|
+      exp.nil? or inp == exp
+    end
+  end
+  unless match
+    expected_str = expected_line.map { |x| x.nil? ? '*' : x }.join(' ')
+    raise "Expected '#{expected_str}', got '#{input_line.join(' ')}'"
+  end
+end
+
+stack = []
+@checks = {}
+@program.each_slice(@program.length/14).with_index do |p, i|
+  # Every digit follows this path
+  # See reverse_engineer file for logic
+  check_line(p[0],  [:inp, :w])
+  check_line(p[1],  [:mul, :x, 0])
+  check_line(p[2],  [:add, :x, :z])
+  check_line(p[3],  [:mod, :x, 26])
+  check_line(p[4],  [:div, :z, nil])
+  check_line(p[5],  [:add, :x, nil])
+  check_line(p[6],  [:eql, :x, :w])
+  check_line(p[7],  [:eql, :x, 0])
+  check_line(p[8],  [:mul, :y, 0])
+  check_line(p[9],  [:add, :y, 25])
+  check_line(p[10], [:mul, :y, :x])
+  check_line(p[11], [:add, :y, 1])
+  check_line(p[12], [:mul, :z, :y])
+  check_line(p[13], [:mul, :y, 0])
+  check_line(p[14], [:add, :y, :w])
+  check_line(p[15], [:add, :y, nil])
+  check_line(p[16], [:mul, :y, :x])
+  check_line(p[17], [:add, :z, :y])
+  # Check type of digit handling
+  case p[4][2]
+  when 1
+    # Just adding value to the "stack" (the p[6] check will never be true)
+    stack_top_offset = stack.empty? ? 0 : stack.last.last
+    raise "Dummy check could be true" if (stack_top_offset + p[5][2]).abs < 9
+    stack << [i, p[15][2]]
+  when 26
+    # Checking digit against "stack" top
+    index, offset = stack.pop
+    offset += p[5][2]
+    @checks[i] = [index, offset]
+  else
+    raise "Unexpected z division by #{p[4][2]}"
+  end
+end
+raise "Stack not empty" unless stack.empty?
+
+@limits = Array.new(14)
+@checks.each do |i1, (i2, offset)|
+  if offset < 0
+    i2, i1 = i1, i2
+    offset = - offset
+  end
+  @limits[i1] = (1 + offset)..9
+  @limits[i2] = 1..(9 - offset)
+end
 
 # Part 1
-max_value = limits.map { |l| l.max }.inject(0) { |n, x| n * 10 + x }
+max_value = @limits.map { |l| l.max }.inject(0) { |n, x| n * 10 + x }
 raise "Calculated max not valid" unless run(max_value) == 0
 puts "Largest valid input: #{max_value}"
 
 # Part 2
-min_value = limits.map { |l| l.min }.inject(0) { |n, x| n * 10 + x }
+min_value = @limits.map { |l| l.min }.inject(0) { |n, x| n * 10 + x }
 raise "Calculated min not valid" unless run(min_value) == 0
 puts "Smallest valid input: #{min_value}"
