@@ -1,50 +1,68 @@
+require 'set'
+
 file = 'input'
 #file = 'example1'
 
-@map = File.read(file).strip.split("\n").map { |line| line.chars }
+@map = File.read(file).strip.split("\n")
+@width = @map.first.length
+@height = @map.length
+@x_bits = Math.log2(@width).ceil
+@x_mask = (1 << @x_bits) - 1
 
-def step(map)
-  moved = false
-  # Move east-facing herd
-  east_map = map.map do |line|
-    new_line = Array.new(line.length)
-    line.each_with_index do |c, x|
-      next_x = (x + 1) % line.length
-      if c == '>' and line[next_x] == '.'
-        new_line[x] = '.'
-        new_line[next_x] = '>'
-        moved = true
-      elsif new_line[x].nil?
-        new_line[x] = c
-      end
-    end
-    new_line
-  end
-  # Move south-facing herd
-  new_map = Array.new(east_map.length) { Array.new(east_map.first.length) }
-  east_map.each_with_index do |line, y|
-    next_y = (y + 1) % east_map.length
-    line.each_with_index do |c, x|
-      if c == 'v' and east_map[next_y][x] == '.'
-        new_map[next_y][x] = 'v'
-        new_map[y][x] = '.'
-        moved = true
-      elsif new_map[y][x].nil?
-        new_map[y][x] = c
-      end
+@east_herd = Set[]
+@south_herd = Set[]
+@map.each_with_index do |line, y|
+  line.each_char.with_index do |c, x|
+    case c
+    when '>'
+      @east_herd << (y << @x_bits | x)
+    when 'v'
+      @south_herd << (y << @x_bits | x)
+    when '.'
+      # Ignore
+    else
+      raise "Unexpected character '#{c}'"
     end
   end
-  return new_map, moved
 end
 
-map = @map
+def step(east_herd, south_herd)
+  moved = false
+  # Move east-facing herd
+  new_east_herd = Set[]
+  east_herd.each do |i|
+    x = i & @x_mask
+    y = i >> @x_bits
+    east_i = (y << @x_bits | ((x + 1) % @width))
+    if east_herd.include?(east_i) or south_herd.include?(east_i)
+      new_east_herd << i
+    else
+      new_east_herd << east_i
+      moved = true
+    end
+  end
+  # Move south-facing herd
+  new_south_herd = Set[]
+  south_herd.each do |i|
+    x = i & @x_mask
+    y = i >> @x_bits
+    south_i = ((y + 1) % @height << @x_bits | x)
+    if new_east_herd.include?(south_i) or south_herd.include?(south_i)
+      new_south_herd << i
+    else
+      new_south_herd << south_i
+      moved = true
+    end
+  end
+  return new_east_herd, new_south_herd, moved
+end
+
+east_herd = @east_herd
+south_herd = @south_herd
 steps = 0
-print "Moving.."
 begin
-  print '.' if steps % 50 == 0
-  map, moved = step(map)
+  east_herd, south_herd, moved = step(east_herd, south_herd)
   steps += 1
 end while moved
-puts " Done"
 
 puts "Steady state reached at #{steps} steps"
