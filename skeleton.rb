@@ -1,4 +1,4 @@
-file = 'input'
+file = ARGV[0] || 'input'
 #file = 'example1'
 
 File.read(file).strip.split("\n").each do |line|
