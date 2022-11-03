@@ -3,8 +3,6 @@
 require 'net/http'
 require 'optparse'
 
-$base_path = File.expand_path(File.dirname(__FILE__))
-
 $year = Time.now.year
 today = Time.now.strftime('%Y/%d')
 $requests = []
@@ -24,7 +22,7 @@ $opts = OptionParser.new do |opts|
     file ||= 'input'
     year = $year
     if day == '.'
-      dir = Dir.pwd.sub(/\A#{Regexp.escape($base_path)}\//, '')
+      dir = Dir.pwd.sub(/\A#{Regexp.escape(__dir__)}\//, '')
       year, day, *extra = dir.split('/')
       unless year =~ /\A\d{4}\z/ and day =~ /\A\d{1,2}\z/ and extra.empty?
         STDERR.puts "Did you run this in a day folder (i.e. #{today})?"
@@ -71,7 +69,7 @@ rescue => e
 end
 
 def get_session(force_prompt = false)
-  session_file = File.join($base_path, '.session')
+  session_file = File.join(__dir__, '.session')
   if File.exist?(session_file) and not force_prompt
     session = File.read(session_file).strip
   else
