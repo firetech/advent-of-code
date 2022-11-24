@@ -131,12 +131,13 @@ found = false
     # Searching for middle line of monster, so skip first and last line
     next if l == 0 or l == lines.length - 1
     p = 0
-    line.scan(/(.*?)#....##....##....###/) do |match|
-      p += match.first.length
+    until (p = line.index(/#....##....##....###/, p)).nil?
       if lines[l-1] =~ /\A.{#{p}}..................#./ and lines[l+1] =~ /\A.{#{p}}.#..#..#..#..#..#.../
         monsters += 1
+        p += 20
+      else
+        p += 1
       end
-      p += 20
     end
   end
   if monsters > 0
