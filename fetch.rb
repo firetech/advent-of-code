@@ -96,6 +96,9 @@ Net::HTTP.start('adventofcode.com', 443, nil, options) do |http|
     end
     STDERR.puts "Fetching #{request_uri} to #{file}..."
     req = Net::HTTP::Get.new(request_uri)
+    req['User-Agent'] = 'fetch.rb, ' \
+                        'from https://github.com/firetech/advent-of-code, ' \
+                        'by aoc(at)[github_username](dot)nu'
     req['cookie'] = "session=#{$session}"
     body = nil
     begin
