@@ -99,9 +99,8 @@ Net::HTTP.start('adventofcode.com', 443, nil, options) do |http|
     req['User-Agent'] = 'fetch.rb, ' \
                         'from https://github.com/firetech/advent-of-code, ' \
                         'by aoc(at)[github_username](dot)nu'
-    req['cookie'] = "session=#{$session}"
-    body = nil
     begin
+      req['cookie'] = "session=#{$session}"
       do_retry = false
       http.request(req) do |response|
         if response.is_a?(Net::HTTPSuccess)
