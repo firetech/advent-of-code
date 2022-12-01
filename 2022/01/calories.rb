@@ -1,4 +1,4 @@
-file = 'input'
+file = ARGV[0] || 'input'
 #file = 'example1'
 
 @elves = File.read(file).strip.split("\n\n").map do |group|
