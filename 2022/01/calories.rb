@@ -9,4 +9,4 @@ end
 puts "Top elf is carrying #{@elves.max} Calories"
 
 # Part 2
-puts "Top three elves are carrying #{@elves.sort.last(3).flatten.sum} Calories"
+puts "Top three elves are carrying #{@elves.sort.last(3).sum} Calories"
