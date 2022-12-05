@@ -22,10 +22,10 @@ instructions.split("\n").each do |line|
     to = Regexp.last_match(3).to_i - 1
 
     # Part 1
-    s1[to] += s1[from].pop(count).reverse
+    s1[to].push(*s1[from].pop(count).reverse)
 
     # Part 2
-    s2[to] += s2[from].pop(count)
+    s2[to].push(*s2[from].pop(count))
   else
     raise "Malformed line: '#{line}'"
   end
