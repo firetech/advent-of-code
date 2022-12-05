@@ -1,14 +1,14 @@
 file = ARGV[0] || 'input'
 #file = 'example1'
 
-stacks, instructions = File.read(file).rstrip.split("\n\n")
+stacks, instructions = File.read(file).rstrip.split("\n\n", 2)
 
 @stacks = []
 stacks.split("\n")[0..-2].each do |line|
-  line.scan(/(?:\[([A-Z])\]|   )(?: |\Z)/).each_with_index do |crate, i|
+  line.scan(/(?:\[([A-Z])\]|   )(?: |\Z)/).each_with_index do |(crate), i|
     @stacks[i] ||= []
-    next if crate.first.nil?
-    @stacks[i].unshift(crate.first)
+    next if crate.nil?
+    @stacks[i].unshift(crate)
   end
 end
 
@@ -22,9 +22,7 @@ instructions.split("\n").each do |line|
     to = Regexp.last_match(3).to_i - 1
 
     # Part 1
-    count.times do
-      s1[to] << s1[from].pop
-    end
+    s1[to] += s1[from].pop(count).reverse
 
     # Part 2
     s2[to] += s2[from].pop(count)
