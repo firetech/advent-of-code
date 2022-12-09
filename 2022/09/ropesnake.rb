@@ -5,8 +5,7 @@ file = ARGV[0] || 'input'
 #file = 'example2'
 
 def move_tail(head_pos, tail_pos)
-  tail_delta = head_pos.zip(tail_pos).map { |h, t| (h - t).abs }
-  if tail_delta.any? { |d| d > 1 }
+  if head_pos.zip(tail_pos).any? { |h, t| (h - t).abs > 1 }
     # Move tail
     if head_pos.zip(tail_pos).any? { |h, t| h == t }
       # ...straight
@@ -16,10 +15,7 @@ def move_tail(head_pos, tail_pos)
       possible = []
       positions = [[-1, -1], [-1, 1], [1, 1], [1, -1]].map do |delta|
         pos = tail_pos.zip(delta).map { |t, d| t + d }
-        dist = head_pos.zip(pos).map { |h, p| (h - p).abs }
-        if dist.all? { |d| d <= 1 }
-          possible << pos
-        end
+        possible << pos if head_pos.zip(pos).all? { |h, p| (h - p).abs <= 1}
       end
       if possible.length > 1
         raise "Multiple possible diagonal moves"
@@ -49,17 +45,17 @@ File.read(file).rstrip.split("\n").each do |line|
     dist.times do
       head_pos = head_pos.zip(delta).map { |p, dp| p + dp }
       last_head = head_pos
-      tail_pos = tail_pos.map do |tp|
-        new_tp = move_tail(last_head, tp)
-        last_head = new_tp
-      end
-      @visited1 << tail_pos.first
-      @visited2 << tail_pos.last
+      tail_pos = tail_pos.map { |tp| last_head = move_tail(last_head, tp) }
+      @visited1 << tail_pos.first # Part 1
+      @visited2 << tail_pos.last # Part 2
     end
   else
     raise "Malformed line: '#{line}'"
   end
 end
 
+# Part 1
 puts "First tail visited #{@visited1.length} positions"
+
+# Part 2
 puts "Last tail visited #{@visited2.length} positions"
