@@ -113,5 +113,5 @@ target_name = @bots.values.find { |bot| bot.inputs == target }.name rescue '???'
 puts "#{target_name.capitalize} does comparison of #{target.join(' and ')}"
 
 # Part 2
-product = [0, 1, 2].map { |x| @outputs[x].input }.inject(1) { |prod, x| prod * x }
+product = [0, 1, 2].map { |x| @outputs[x].input }.inject(&:*)
 puts "Product of output 0, 1 and 2 chip values: #{product}"

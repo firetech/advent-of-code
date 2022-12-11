@@ -82,7 +82,7 @@ def mana_to_win(starting_effects = {})
     won = player_turn(boss_hp, player_hp, player_mana, player_effects, actions, queue)
   end
   if won
-    return won.map { |action| ACTIONS[action][:cost] }.inject(0) { |sum, x| sum + x }
+    return won.map { |action| ACTIONS[action][:cost] }.sum
   else
     raise "Lost all possible battles :("
   end

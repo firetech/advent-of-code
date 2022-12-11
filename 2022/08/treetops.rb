@@ -56,7 +56,7 @@ max_score = 0
     end while @map[y][x] < height
     visible << dir_visible
   end
-  score = visible.inject(1) { |prod, x| prod * x}
+  score = visible.inject(&:*)
   max_score = score if score > max_score
 end
 

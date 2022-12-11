@@ -57,7 +57,7 @@ def read_packet(str, offset = 0)
     when 0
       value = values.sum
     when 1
-      value = values.inject(1) { |prod, v| prod * v }
+      value = values.inject(&:*)
     when 2
       value = values.min
     when 3

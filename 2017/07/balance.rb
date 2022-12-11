@@ -20,9 +20,7 @@ class Program
 
   def total_weight
     if not defined?(@total_weight)
-      @total_weight = @weight + @children.inject(0) do |sum, child|
-        sum + child.total_weight
-      end
+      @total_weight = @weight + @children.sum { |child| child.total_weight }
     end
     @total_weight
   end

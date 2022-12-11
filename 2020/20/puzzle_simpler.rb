@@ -38,7 +38,7 @@ edges = @edge_map.values.select { |list| list.length == 1 }
 edge_count = edges.group_by(&:first).transform_values(&:size)
 @corners = edge_count.select { |id, count| count == 2 }.keys
 
-product = @corners.inject(1) { |prod, x| prod * x }
+product = @corners.inject(&:*)
 puts "Corner product: #{@corners.join(' * ')} = #{product}"
 
 # Part 2

@@ -28,5 +28,5 @@ puts "Product of first two numbers: #{list[0] * list[1]}"
 
 # Part 2
 list = knothash(input.bytes + [17, 31, 73, 47, 23], 64)
-parts = list.each_slice(16).map { |slice| slice.inject(0) { |val, x| val ^ x } }
+parts = list.each_slice(16).map { |slice| slice.inject(&:^) }
 puts "Hash: #{parts.map { |p| '%02x' % p }.join}"

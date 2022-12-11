@@ -5,14 +5,11 @@ input = File.read('input').strip
 sheet = input.split("\n").map { |line| line.split(/\s+/).map(&:to_i) }
 
 # Part 1
-chksum = sheet.inject(0) do |sum, line|
-  sum + (line.max - line.min)
-end
-
+chksum = sheet.sum { |line| line.max - line.min }
 puts "Spreadsheet checksum: #{chksum}"
 
 # Part 2
-divsum = sheet.inject(0) do |sum, line|
+divsum = sheet.sum do |line|
   div = 0
   line.combination(2) do |a, b|
     if a % b == 0
@@ -23,7 +20,7 @@ divsum = sheet.inject(0) do |sum, line|
       break
     end
   end
-  sum + div
+  div
 end
 
 puts "Sum of divisible numbers: #{divsum}"

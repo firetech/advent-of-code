@@ -120,7 +120,7 @@ while pow < n
 end
 
 bits_of_n = bits.keys.select { |b| n & b == b }
-if bits_of_n.inject(0) { |sum, x| sum + x } != n
+if bits_of_n.sum != n
   raise "Sum of bits is not the same as value"
 end
 

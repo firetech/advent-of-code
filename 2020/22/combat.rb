@@ -56,7 +56,7 @@ end
 
 def deck_score(deck)
   card_scores = deck.reverse.map.with_index { |val, i| val * (i + 1) }
-  return card_scores.inject(0) { |sum, x| sum + x }
+  return card_scores.sum
 end
 
 ##########

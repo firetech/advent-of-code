@@ -2,10 +2,10 @@ input = File.read('input').strip
 #input = File.read('example').strip
 
 STEPS = 100
-#STEPS = 4  #part 1 example
-#STEPS = 5  #part 2 example
+#STEPS = 4  # Part 1 example
+#STEPS = 5  # Part 2 example
 
-#part 1
+# Part 1
 @lights = input.split("\n").map { |line| line.each_char.map { |c| c == '#' } }
 
 def step(lights, force_corners = false)
@@ -41,9 +41,9 @@ STEPS.times do
   lights = step(lights)
 end
 
-puts "#{lights.map { |line| line.count(true) }.inject(0) { |sum, x| sum + x }} lights are on"
+puts "#{lights.map { |line| line.count(true) }.sum} lights are on"
 
-#part 2
+# Part 2
 lights = @lights.map(&:clone)
 rows = lights.length
 cols = lights.first.length
@@ -52,4 +52,4 @@ STEPS.times do
   lights = step(lights, true)
 end
 
-puts "#{lights.map { |line| line.count(true) }.inject(0) { |sum, x| sum + x }} lights are on when corners are stuck"
+puts "#{lights.map { |line| line.count(true) }.sum} lights are on when corners are stuck"

@@ -20,7 +20,7 @@ input = 'jxqlasbh'
   end
 
   list.rotate!(-current)
-  parts = list.each_slice(16).map { |s| s.inject(0) { |v, x| v ^ x } }
+  parts = list.each_slice(16).map { |s| s.inject(&:^) }
 
   @grid << parts.map { |p| ('%08b' % p).chars.map { |b| b == '1' } }.flatten
 end

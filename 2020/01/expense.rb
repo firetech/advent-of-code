@@ -2,8 +2,8 @@
 
 def find2020(count)
   @input.combination(count) do |c|
-    if c.inject(0) { |sum, x| sum + x } == 2020
-      puts "#{c.join(' + ')} = 2020, #{c.join(' * ')} = #{c.inject(1) { |prod, x| prod * x }}"
+    if c.sum == 2020
+      puts "#{c.join(' + ')} = 2020, #{c.join(' * ')} = #{c.inject(&:*)}"
       break
     end
   end

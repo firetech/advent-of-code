@@ -41,7 +41,7 @@ corners = corners.map { |tile, edges| [tile, edges.map(&:last) ] }.to_h
 if corners.length != 4
   raise "#{corners.length} corners found!"
 end
-puts "Corner product: #{corners.keys.join(' * ')} = #{corners.keys.inject(1) { |prod, x| prod * x }}"
+puts "Corner product: #{corners.keys.join(' * ')} = #{corners.keys.inject(&:*)}"
 
 
 ##########
@@ -142,7 +142,7 @@ found = false
   end
   if monsters > 0
     found = true
-    roughness = lines.map { |l| l.count('#') }.inject(0) { |sum, x| sum + x } - 15 * monsters
+    roughness = lines.map { |l| l.count('#') }.sum - 15 * monsters
     puts "Found #{monsters} sea monsters, water roughness: #{roughness}"
     break
   end

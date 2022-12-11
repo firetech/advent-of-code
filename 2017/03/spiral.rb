@@ -42,9 +42,7 @@ continue = true
 while continue
   steps.times do
     pos += DIRS[dir]
-    x = NEIGHBOURS.inject(0) do |sum, delta|
-      sum + (grid[pos + delta] or 0)
-    end
+    x = NEIGHBOURS.sum { |delta| grid[pos + delta] or 0 }
     grid[pos] = x
     if x > input
       puts "First value larger than #{input}: #{x}"

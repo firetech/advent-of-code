@@ -5,7 +5,7 @@ def fuel(weight)
   return [weight.to_i / 3 - 2, 0].max
 end
 
-puts "Total fuel: #{input.map { |weight| fuel(weight) }.inject(0) { |sum,x| sum + x }}"
+puts "Total fuel: #{input.map { |weight| fuel(weight) }.sum}"
 
 
 #part 2
@@ -17,4 +17,4 @@ def all_fuel(weight)
   end while weight > 0
   return sum
 end
-puts "Actual total fuel: #{input.map { |weight| all_fuel(weight) }.inject(0) { |sum,x| sum + x }}"
+puts "Actual total fuel: #{input.map { |weight| all_fuel(weight) }.sum}"

@@ -57,8 +57,8 @@ bodies = parse(input)
 end
 
 energy = bodies.map do |b|
-  pot = b[:pos].values.inject(0) { |sum, x| sum + x.abs }
-  kin = b[:vel].values.inject(0) { |sum, x| sum + x.abs }
+  pot = b[:pos].values.sum(&:abs)
+  kin = b[:vel].values.sum(&:abs)
   pot * kin
 end.reduce(:+)
 puts "Total energy: #{energy}"
@@ -87,6 +87,6 @@ while cycles.values.include? nil
   end
 end
 
-puts "Full pattern will repeat after #{cycles.values.inject(1) { |lcm, x| lcm.lcm(x) }} cycles"
+puts "Full pattern will repeat after #{cycles.values.inject(&:lcm)} cycles"
 
 

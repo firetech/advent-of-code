@@ -4,14 +4,14 @@ file = 'input'
 @input = File.read(file).strip.split("\n").map(&:to_i)
 
 def best_qe(groups)
-  target_weight = @input.inject(0) { |sum, x| sum + x } / groups
+  target_weight = @input.sum / groups
 
   n = (target_weight / @input.max.to_f).ceil.to_i
   loop do
     qe = []
     @input.combination(n) do |group|
-      if group.inject(0) { |sum, x| sum + x } == target_weight
-        qe << group.inject(1) { |prod, x| prod * x }
+      if group.sum == target_weight
+        qe << group.inject(&:*)
       end
     end
     if not qe.empty?

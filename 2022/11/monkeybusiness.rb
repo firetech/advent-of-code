@@ -64,7 +64,7 @@ File.read(file).rstrip.split("\n\n").each do |block|
 end
 
 # Keep numbers manageable by running mod [the LCM of all divisors].
-@lcm = @monkeys.values.map(&:div).inject(1) { |lcm, x| lcm.lcm(x) }
+@lcm = @monkeys.values.map(&:div).inject(&:lcm)
 
 def round(div_by_3)
   @monkeys.each do |id, monkey|
@@ -75,7 +75,7 @@ def round(div_by_3)
 end
 
 def monkey_business
-  @monkeys.values.map(&:inspected).sort.last(2).inject(1) { |prd, x| prd * x }
+  @monkeys.values.map(&:inspected).sort.last(2).inject(&:*)
 end
 
 # Part 1

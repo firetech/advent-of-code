@@ -24,7 +24,7 @@ input.each do |line|
   end
 end
 
-puts "Sum of valid sector IDs: #{valid_rooms.map(&:last).inject(0) { |sum, x| sum + x }}"
+puts "Sum of valid sector IDs: #{valid_rooms.map(&:last).sum}"
 
 # Part 2
 def decrypt(name, sector)

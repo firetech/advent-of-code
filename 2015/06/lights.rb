@@ -1,9 +1,8 @@
-require 'pp'
 input = File.read('input').strip.split("\n")
 
-#part 1
+# Part 1
 #lights = Array.new(1000000, false)
-#part 2
+# Part 2
 lights = Array.new(1000000, 0)
 def i(x, y)
   return x * 1000 + y
@@ -18,7 +17,7 @@ input.each do |line|
     y_max = Regexp.last_match[5].to_i
     (x_min..x_max).each do |x|
       (y_min..y_max).each do |y|
-        #part 1
+        # Part 1
 =begin
         lights[i(x,y)] = case action
           when 'turn on'
@@ -29,7 +28,7 @@ input.each do |line|
             false
         end
 =end
-        #part 2
+        # Part 2
 #=begin
         lights[i(x,y)] = case action
           when 'turn on'
@@ -47,7 +46,7 @@ input.each do |line|
   end
 end
 
-#part 1
+# Part 1
 #puts "#{lights.count(true)} lights are on"
-#part 2
-puts "Total brightness: #{lights.inject(0) { |sum, x| sum + x }}"
+# Part 2
+puts "Total brightness: #{lights.sum}"

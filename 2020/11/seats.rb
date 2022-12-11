@@ -57,7 +57,7 @@ def stable_state(map, max_neighbours, see_past_floor)
     last_map = map
     map = next_state(map, max_neighbours, see_past_floor)
   end
-  return map.map { |line| line.count(true) }.inject(0) { |sum, x| sum + x }
+  return map.map { |line| line.count(true) }.sum
 end
 
 #part 1

@@ -16,9 +16,9 @@ def parse(line, precedence)
 end
 
 # Part 1
-sum = input.inject(0) { |sum, line| sum + parse(line, ['+*']) }
+sum = input.sum { |line| parse(line, ['+*']) }
 puts "Sum of results with equal precedence: #{sum}"
 
 # Part 2
-sum = input.inject(0) { |sum, line| sum + parse(line, ['+', '*']) }
+sum = input.sum { |line| parse(line, ['+', '*']) }
 puts "Sum of results with addition precedence: #{sum}"

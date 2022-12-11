@@ -28,7 +28,7 @@ safe_ingredients = Set.new(ingredient_occurrences.keys)
 possible_allergens.each do |allergen, ingredients|
   safe_ingredients -= ingredients
 end
-safe_occurrences = safe_ingredients.map { |i| ingredient_occurrences[i] }.inject(0) { |sum, x| sum + x }
+safe_occurrences = safe_ingredients.map { |i| ingredient_occurrences[i] }.sum
 puts "Safe ingredients are appearing #{safe_occurrences} times"
 
 

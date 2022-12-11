@@ -42,7 +42,7 @@ input.each do |line|
     raise "Malformed line: '#{line}'"
   end
 end
-puts "Sum of memory values (value masking): #{mem.values.inject(0) { |sum, x| sum + x }}"
+puts "Sum of memory values (value masking): #{mem.values.sum}"
 
 ##########
 # Part 2 #
@@ -71,7 +71,7 @@ def parse_addr_mask(mask)
   @addr_mask1 = mask1
   @addr_maskf = ~maskf
   @addr_floating = (0..floating.length).flat_map { |n| floating.combination(n).to_a }.map do |bits|
-    bits.map { |bit| 1 << bit }.inject(0) { |mask, x| mask | x }
+    bits.map { |bit| 1 << bit }.inject(0, &:|)
   end
 end
 
@@ -92,4 +92,4 @@ input.each do |line|
     raise "Malformed line: '#{line}'"
   end
 end
-puts "Sum of memory values (address masking): #{mem.values.inject(0) { |sum, x| sum + x }}"
+puts "Sum of memory values (address masking): #{mem.values.sum}"
