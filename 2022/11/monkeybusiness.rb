@@ -63,7 +63,7 @@ File.read(file).rstrip.split("\n\n").each do |block|
   end
 end
 
-# Keep numbers manageable by dividing the worries with the LCM of all divisors
+# Keep numbers manageable by running mod [the LCM of all divisors].
 @lcm = @monkeys.values.map(&:div).inject(1) { |lcm, x| lcm.lcm(x) }
 
 def round(div_by_3)
