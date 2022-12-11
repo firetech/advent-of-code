@@ -1,9 +1,10 @@
 input = File.read('input').strip.split("\n")
 
 # Part 1
-#lights = Array.new(1000000, false)
+lights1 = Array.new(1000000, false)
+
 # Part 2
-lights = Array.new(1000000, 0)
+lights2 = Array.new(1000000, 0)
 def i(x, y)
   return x * 1000 + y
 end
@@ -18,26 +19,23 @@ input.each do |line|
     (x_min..x_max).each do |x|
       (y_min..y_max).each do |y|
         # Part 1
-=begin
-        lights[i(x,y)] = case action
+        lights1[i(x,y)] = case action
           when 'turn on'
             true
           when 'toggle'
-            (not lights[i(x,y)])
+            (not lights1[i(x,y)])
           when 'turn off'
             false
         end
-=end
+
         # Part 2
-#=begin
-        lights[i(x,y)] = case action
+        lights2[i(x,y)] = case action
           when 'turn on'
-            lights[i(x,y)] + 1
+            lights2[i(x,y)] + 1
           when 'toggle'
-            lights[i(x,y)] + 2
+            lights2[i(x,y)] + 2
           when 'turn off'
-            [lights[i(x,y)] - 1, 0].max
-#=end
+            [lights2[i(x,y)] - 1, 0].max
         end
       end
     end
@@ -47,6 +45,7 @@ input.each do |line|
 end
 
 # Part 1
-#puts "#{lights.count(true)} lights are on"
+puts "#{lights1.count(true)} lights are on"
+
 # Part 2
-puts "Total brightness: #{lights.sum}"
+puts "Total brightness: #{lights2.sum}"
