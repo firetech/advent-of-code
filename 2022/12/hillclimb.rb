@@ -1,10 +1,11 @@
 require_relative '../../lib/priority_queue'
+require_relative '../../lib/multicore'
 
 file = ARGV[0] || 'input'
 #file = 'example1'
 
-@start1 = nil
-@start2 = []
+@start = nil
+@starts = []
 @end = nil
 @map = File.read(file).strip.split("\n").map.with_index do |line, y|
   chars = line.chars
@@ -15,7 +16,7 @@ file = ARGV[0] || 'input'
   end
 
   as = (0...chars.length).find_all { |x| chars[x] == 'a' }
-  @start2.push(*as.map { |x| [x, y] })
+  @starts.push(*as.map { |x| [x, y] })
 
   if not (x = line.index('E')).nil?
     chars[x] = 'z'
@@ -34,7 +35,7 @@ def from_pos(pos)
   return (pos & @x_mask), (pos >> @x_bits)
 end
 
-def dijkstra(start = @start)
+def dijkstra(start)
   # Copied from 2018/22 and 2021/15. ^_^
   x_range = (0...@map.first.length)
   y_range = (0...@map.length)
@@ -70,8 +71,27 @@ def dijkstra(start = @start)
   return dist[end_pos]
 end
 
+stop = nil
+answers = {}
+begin
+  input, output, stop = Multicore.run do |worker_in, worker_out|
+    until (start = worker_in[]).nil?
+      worker_out[[start, dijkstra(start)]]
+    end
+  end
+  @starts.each { |start| input << start } # Includes the part 1 start
+  input.close
+  @starts.length.times do
+    start, ans = output.pop
+    raise "Worker returned nil" if ans.nil?
+    answers[start] = ans
+  end
+ensure
+  stop[] unless stop.nil?
+end
+
 # Part 1
-puts "Shortest path from 'S' to 'E': #{dijkstra}"
+puts "Shortest path from 'S' to 'E': #{answers[@start]}"
 
 # Part 2
-puts "Shortest path from any 'a' to 'E': #{@start2.map { |s| dijkstra(s) }.min}"
+puts "Shortest path from any 'a' to 'E': #{answers.values.min}"
