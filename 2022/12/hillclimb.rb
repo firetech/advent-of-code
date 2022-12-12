@@ -1,4 +1,3 @@
-require_relative '../../lib/priority_queue'
 require_relative '../../lib/multicore'
 
 file = ARGV[0] || 'input'
@@ -35,18 +34,17 @@ def from_pos(pos)
   return (pos & @x_mask), (pos >> @x_bits)
 end
 
-def dijkstra(start)
-  # Copied from 2018/22 and 2021/15. ^_^
+def bfs(start)
   x_range = (0...@map.first.length)
   y_range = (0...@map.length)
   dist = Hash.new(Float::INFINITY)
   start_pos = to_pos(*start)
   dist[start_pos] = 0
-  queue = PriorityQueue.new
-  queue.push(start_pos, 0)
+  queue = []
+  queue << start_pos
   end_pos = to_pos(*@end)
   until queue.empty?
-    pos = queue.pop_min
+    pos = queue.shift
 
     break if pos == end_pos
 
@@ -63,7 +61,7 @@ def dijkstra(start)
       ndist = this_dist + 1
       if ndist < dist[npos]
         dist[npos] = ndist
-        queue.push(npos, ndist)
+        queue << npos
       end
     end
   end
@@ -76,7 +74,7 @@ answers = {}
 begin
   input, output, stop = Multicore.run do |worker_in, worker_out|
     until (start = worker_in[]).nil?
-      worker_out[[start, dijkstra(start)]]
+      worker_out[[start, bfs(start)]]
     end
   end
   @starts.each { |start| input << start } # Includes the part 1 start
