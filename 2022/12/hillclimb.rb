@@ -1,5 +1,3 @@
-require_relative '../../lib/multicore'
-
 file = ARGV[0] || 'input'
 #file = 'example1'
 
@@ -13,9 +11,6 @@ file = ARGV[0] || 'input'
     chars[x] = 'a'
     @start = [x, y]
   end
-
-  as = (0...chars.length).find_all { |x| chars[x] == 'a' }
-  @starts.push(*as.map { |x| [x, y] })
 
   if not (x = line.index('E')).nil?
     chars[x] = 'z'
@@ -34,7 +29,7 @@ def from_pos(pos)
   return (pos & @x_mask), (pos >> @x_bits)
 end
 
-def bfs(start)
+def bfs(start, end_at, backwards = false)
   x_range = (0...@map.first.length)
   y_range = (0...@map.length)
   dist = Hash.new(Float::INFINITY)
@@ -42,7 +37,10 @@ def bfs(start)
   dist[start_pos] = 0
   queue = []
   queue << start_pos
-  end_pos = to_pos(*@end)
+  end_pos = nil
+  if end_at.is_a?(Array)
+    end_pos = to_pos(*end_at)
+  end
   until queue.empty?
     pos = queue.shift
 
@@ -50,13 +48,21 @@ def bfs(start)
 
     this_dist = dist[pos]
     x, y = from_pos(pos)
-    this_height = @map[y][x].ord
+    height_char = @map[y][x]
+    if height_char == end_at
+      end_pos = pos
+      break
+    end
+
+    this_height = height_char.ord
     [[-1, 0], [1, 0], [0, -1], [0, 1]].each do |delta_x, delta_y|
       nx = x + delta_x
       next unless x_range.include?(nx)
       ny = y + delta_y
       next unless y_range.include?(ny)
-      next unless @map[ny][nx].ord - this_height <= 1
+      height_diff = @map[ny][nx].ord - this_height
+      height_diff = -height_diff if backwards
+      next unless height_diff <= 1
       npos = to_pos(nx, ny)
       ndist = this_dist + 1
       if ndist < dist[npos]
@@ -69,27 +75,8 @@ def bfs(start)
   return dist[end_pos]
 end
 
-stop = nil
-answers = {}
-begin
-  input, output, stop = Multicore.run do |worker_in, worker_out|
-    until (start = worker_in[]).nil?
-      worker_out[[start, bfs(start)]]
-    end
-  end
-  @starts.each { |start| input << start } # Includes the part 1 start
-  input.close
-  @starts.length.times do
-    start, ans = output.pop
-    raise "Worker returned nil" if ans.nil?
-    answers[start] = ans
-  end
-ensure
-  stop[] unless stop.nil?
-end
-
 # Part 1
-puts "Shortest path from 'S' to 'E': #{answers[@start]}"
+puts "Shortest path from 'S' to 'E': #{bfs(@start, @end)}"
 
 # Part 2
-puts "Shortest path from any 'a' to 'E': #{answers.values.min}"
+puts "Shortest path from any 'a' to 'E': #{bfs(@end, 'a', true)}"
