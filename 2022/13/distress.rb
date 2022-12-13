@@ -5,19 +5,19 @@ file = ARGV[0] || 'input'
   pair.split("\n").map { |line| eval(line) }
 end
 
-def compare(left, right, depth = 0)
+def compare(left, right)
   l_arr = left.is_a?(Array)
   r_arr = right.is_a?(Array)
   if not l_arr and not r_arr
     return left <=> right
   elsif l_arr and not r_arr
-    return compare(left, [right], depth + 1)
+    return compare(left, [right])
   elsif not l_arr and r_arr
-    return compare([left], right, depth + 1)
+    return compare([left], right)
   else
     left.zip(right) do|l, r|
       return 1 if r.nil?
-      cmp = compare(l, r, depth + 1)
+      cmp = compare(l, r)
       return cmp if cmp != 0
     end
     return left.length <=> right.length
