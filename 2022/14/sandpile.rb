@@ -1,6 +1,10 @@
 file = ARGV[0] || 'input'
 #file = 'example1'
 
+def to_pos(x, y)
+  (y << 10) | x
+end
+
 @map = {}
 @min_x = @max_x = 500
 @min_y = @max_y = 0
@@ -21,7 +25,7 @@ File.read(file).rstrip.split("\n").each do |line|
       unless last_x.nil? or last_y.nil?
         [last_x, x].min.upto([last_x, x].max) do |px|
           [last_y, y].min.upto([last_y, y].max) do |py|
-            @map[[px, py]] = '#'
+            @map[to_pos(px, py)] = '#'
           end
         end
       end
@@ -33,45 +37,59 @@ File.read(file).rstrip.split("\n").each do |line|
   end
 end
 
-def print_map
+def get_map(x, y, inf_floor = false)
+  if inf_floor and y == @max_y
+    return '#'
+  end
+  return @map[to_pos(x, y)]
+end
+
+def print_map(inf_floor = false)
+  x_diff = inf_floor ? 2 : 0
   @min_y.upto(@max_y) do |y|
-    @min_x.upto(@max_x) do |x|
-      print @map[[x, y]] || ' '
+    (@min_x - x_diff).upto(@max_x + x_diff) do |x|
+      print get_map(x, y, inf_floor) || ' '
     end
     puts
   end
 end
 
 @count = 0
-def fill_map(inf_floor = nil)
+def fill_map(inf_floor = false)
   loop do
     x = 500
     y = 0
     begin
       moved = false
-      if @map[[x, y+1]].nil? and (inf_floor.nil? or y < inf_floor)
+      if get_map(x, y+1, inf_floor).nil?
         y += 1
         moved = true
-      elsif @map[[x-1, y+1]].nil? and (inf_floor.nil? or y < inf_floor)
+      elsif get_map(x-1, y+1, inf_floor).nil?
         x -= 1
         y += 1
         moved = true
-      elsif @map[[x+1, y+1]].nil? and (inf_floor.nil? or y < inf_floor)
+      elsif get_map(x+1, y+1, inf_floor).nil?
         x += 1
         y += 1
         moved = true
       end
     end while moved and y < @max_y
-    break if y >= @max_y or not @map[[x, y]].nil?
-    @map[[x, y]] = 'o'
+    break if y >= @max_y or not get_map(x, y, inf_floor).nil?
+    @min_x = [@min_x, x].min
+    @max_x = [@max_x, x].max
+    @map[to_pos(x, y)] = 'o'
     @count += 1
   end
   return @count
 end
 
 # Part 1
-puts "Units of sand filled before abyss: #{fill_map}"
+count1 = fill_map
+#print_map
+puts "Units of sand filled before abyss: #{count1}"
 
 # Part 2
 @max_y += 2
-puts "Units of sand to fill cave: #{fill_map(@max_y - 1)}"
+count2 = fill_map(true)
+#print_map(true)
+puts "Units of sand to fill cave: #{fill_map(true)}"
