@@ -56,11 +56,12 @@ end
 
 @count = 0
 def fill_map(inf_floor = false)
-  loop do
-    x = 500
-    y = 0
+  stack = [ [500, 0] ]
+  until stack.empty?
+    x, y = stack.pop
     begin
       moved = false
+      old_pos = [x, y]
       if get_map(x, y+1, inf_floor).nil?
         y += 1
         moved = true
@@ -73,8 +74,9 @@ def fill_map(inf_floor = false)
         y += 1
         moved = true
       end
+      stack << old_pos if moved
     end while moved and y < @max_y
-    break if y >= @max_y or not get_map(x, y, inf_floor).nil?
+    break if y >= @max_y
     @min_x = [@min_x, x].min
     @max_x = [@max_x, x].max
     @map[to_pos(x, y)] = 'o'
@@ -92,4 +94,4 @@ puts "Units of sand filled before abyss: #{count1}"
 @max_y += 2
 count2 = fill_map(true)
 #print_map(true)
-puts "Units of sand to fill cave: #{fill_map(true)}"
+puts "Units of sand to fill cave: #{count2}"
