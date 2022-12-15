@@ -1,3 +1,5 @@
+require_relative '../../lib/multicore'
+
 file = ARGV[0] || 'input'; @p1_y = ARGV[1] || 2000000; @p2_max = ARGV[2] || 4000000
 #file = 'example1'; @p1_y = 10; @p2_max = 20
 
@@ -45,26 +47,36 @@ in_range_x = merged_ranges.map(&:size).sum - beacons_at_y.count
 puts "At y=#{@p1_y}, #{in_range_x} positions can't contain a beacon"
 
 # Part 2
+# Since we want to find a _single_ point not in range of any sensor, it must
+# be _just_ outside the range of all nearby sensors.
+# Therefore, checking all positions in the ring one step away from being in
+# range of each sensor, we will find the position not in range of any sensor.
 @pos_range = 0..@p2_max
 @dirs = [-1, 1].product([-1, 1])
-def find_beacon
-  # Since we want to find a _single_ point not in range of any sensor, it must
-  # be _just_ outside the range of all nearby sensors.
-  # Therefore, checking all positions in the ring one step away from being in
-  # range of each sensor, we will find the position not in range of any sensor.
-  @sensors.each do |s|
-    dist = s.min_range + 1
-    @dirs.each do |y_dir, x_dir|
-      0.upto(dist) do |dx|
-        x = s.x + dx * x_dir
-        next unless @pos_range.include?(x)
-        y = s.y + (dist - dx) * y_dir
-        next unless @pos_range.include?(y)
-        return x, y unless @sensors.any? { |s| s.in_range_of(x, y) }
+stop = nil
+begin
+  input, output, stop = Multicore.run do |worker_in, worker_out|
+    loop do
+      s = worker_in[]
+      break if s.nil?
+      dist = s.min_range + 1
+      @dirs.each do |y_dir, x_dir|
+        0.upto(dist) do |dx|
+          x = s.x + dx * x_dir
+          next unless @pos_range.include?(x)
+          y = s.y + (dist - dx) * y_dir
+          next unless @pos_range.include?(y)
+          worker_out[[x, y]] unless @sensors.any? { |s| s.in_range_of(x, y) }
+        end
       end
     end
   end
-  raise "No beacon found?"
+  # Loop through sensors in ascending order of range, since smaller sensors are   # faster to process.
+  @sensors.sort_by(&:min_range).each do |s|
+    input << s
+  end
+  x, y = output.pop
+  puts "Beacon at x=#{x}, y=#{y}. Tuning frequency: #{x * 4000000 + y}"
+ensure
+  stop[] unless stop.nil?
 end
-x, y = find_beacon
-puts "Beacon at x=#{x}, y=#{y}. Tuning frequency: #{x * 4000000 + y}"
