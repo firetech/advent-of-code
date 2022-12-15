@@ -8,6 +8,7 @@ require 'etc'
 module Multicore
 
   IPC_TAIL = '__IPC_OUTPUT_END__'
+  IPC_WAIT = '__IPC_WAIT_INPUT__'
   IPC_EXIT = '__IPC_CHILD_EXIT__'
 
   public
@@ -46,8 +47,13 @@ module Multicore
             child = fork do
               write_to_fork.close
               read_from_fork.close
-              worker_output = ->(val) { write_output[write_from_fork, val] }
-              worker_input = -> { read_input[read_to_fork] }
+              worker_output = ->(val) do
+                write_output[write_from_fork, val]
+              end
+              worker_input = -> do
+                write_output[write_from_fork, IPC_WAIT]
+                read_input[read_to_fork]
+              end
               begin
                 yield worker_input, worker_output, t, nthreads
               rescue Errno::EPIPE
@@ -63,10 +69,13 @@ module Multicore
             read_to_fork.close
             while child_running?(child)
               begin
-                write_output[write_to_fork, input_queue.pop]
                 read = read_input[read_from_fork]
                 break if read == IPC_EXIT
-                output_queue << read
+                if read == IPC_WAIT
+                  write_output[write_to_fork, input_queue.pop]
+                else
+                  output_queue << read
+                end
               rescue Errno::EPIPE
                 break
               end
