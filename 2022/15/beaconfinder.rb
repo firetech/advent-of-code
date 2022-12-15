@@ -1,5 +1,3 @@
-require_relative '../../lib/multicore'
-
 file = ARGV[0] || 'input'; @p1_y = ARGV[1] || 2000000; @p2_max = ARGV[2] || 4000000
 #file = 'example1'; @p1_y = 10; @p2_max = 20
 
@@ -46,37 +44,82 @@ end
 in_range_x = merged_ranges.map(&:size).sum - beacons_at_y.count
 puts "At y=#{@p1_y}, #{in_range_x} positions can't contain a beacon"
 
+
 # Part 2
+require 'set'
+
+@pos_range = 0..@p2_max
+
 # Since we want to find a _single_ point not in range of any sensor, it must
 # be _just_ outside the range of all nearby sensors.
-# Therefore, checking all positions in the ring one step away from being in
-# range of each sensor, we will find the position not in range of any sensor.
-@pos_range = 0..@p2_max
-@dirs = [-1, 1].product([-1, 1])
-stop = nil
-begin
-  input, output, stop = Multicore.run do |worker_in, worker_out|
-    loop do
-      s = worker_in[]
-      break if s.nil?
-      dist = s.min_range + 1
-      @dirs.each do |y_dir, x_dir|
-        0.upto(dist) do |dx|
-          x = s.x + dx * x_dir
-          next unless @pos_range.include?(x)
-          y = s.y + (dist - dx) * y_dir
-          next unless @pos_range.include?(y)
-          worker_out[[x, y]] unless @sensors.any? { |s| s.in_range_of(x, y) }
+# First find all pairs of sensors that have an uncovered line of with 1 between
+# them.
+@pairs = @sensors.combination(2).select do |a, b|
+  ((a.x - b.x).abs + (a.y - b.y).abs) == (a.min_range + b.min_range + 2)
+end
+
+# Find mid-point and slope for each pair
+@diags = [[-1, -1], [-1, 1], [1, -1], [1, 1]]
+@pairs.map! do |pair|
+  # Find mid point
+  dist = pair.map(&:min_range).sum + 2.0
+  by_x = pair.sort_by(&:x)
+  x = (by_x.first.x + ((by_x.first.min_range + 2) / dist) *
+        (by_x.last.x - by_x.first.x)).floor
+  by_y = pair.sort_by(&:y)
+  y = (by_y.first.y + ((by_y.first.min_range + 2) / dist) *
+        (by_y.last.y - by_y.first.y)).floor
+  diags = @diags.select do |dx, dy|
+    px = x + dx
+    py = y + dy
+    @pos_range.include?(px) and @pos_range.include?(py) and
+      pair.none? { |s| s.in_range_of(px, py) }
+  end
+  raise 'Ehm?' if diags.length != 2 and diags.length != 1
+  pair.push(diags, x, y)
+end
+
+# Then, since we're working with Manhattan distance, to encircle a single,
+# uncovered point, we need four distinct sensors, so find all pairs of pairs
+# with four unique sensors between them, that give perpendicular lines.
+@groups = @pairs.combination(2).select do |(a, b, diags1), (c, d, diags2)|
+  a != c and b != c and a != d and b != d and (diags1 & diags2).empty?
+end
+
+# Lastly, follow the diagonals until we find a common point.
+# This can probably be done faster with pure math, but I can't be bothered...
+def key(x, y)
+  return y << 22 | x
+end
+def find_frequency
+  walks = @groups.map do |pairs|
+    seen = Set[]
+    group_walks = pairs.flat_map do |_, _, diags, x, y|
+      start = key(x, y)
+      # Lucky?
+      return x, y if seen.include?(start)
+      seen << start
+      diags.map { |dx, dy| [x + dx, y + dy, dx, dy] }
+    end
+    [group_walks, seen]
+  end
+  until walks.empty?
+    walks.reject! do |group_walks, seen|
+      group_walks.select! do |w|
+        w[0] += w[2] # x += dx
+        w[1] += w[3] # y += dy
+        if @pos_range.include?(w[0]) and @pos_range.include?(w[1])
+          point = key(w[0], w[1])
+          return w[0], w[1] if seen.include?(point)
+          seen << point
+          true # keep walking
+        else
+          false # discard walk
         end
       end
+      group_walks.empty?
     end
   end
-  # Loop through sensors in ascending order of range, since smaller sensors are   # faster to process.
-  @sensors.sort_by(&:min_range).each do |s|
-    input << s
-  end
-  x, y = output.pop
-  puts "Beacon at x=#{x}, y=#{y}. Tuning frequency: #{x * 4000000 + y}"
-ensure
-  stop[] unless stop.nil?
 end
+x, y = find_frequency
+puts "Beacon at x=#{x}, y=#{y}. Tuning frequency: #{x * 4000000 + y}"
