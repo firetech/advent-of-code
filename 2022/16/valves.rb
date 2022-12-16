@@ -1,5 +1,3 @@
-require 'set'
-
 file = ARGV[0] || 'input'
 #file = 'example1'
 
@@ -34,9 +32,10 @@ end
   @valve_to_valve[valve] = dist
 end
 
+# Part 1
 @cache = {}
-def dfs(pos = 'AA', open = Set[], time = 30)
-  state = [pos, open, time]
+def dfs(pos = 'AA', open = [], time = 30)
+  state = [pos, open, time].hash
   val = @cache[state]
   if val.nil?
     val = 0
@@ -44,7 +43,7 @@ def dfs(pos = 'AA', open = Set[], time = 30)
       next if open.include?(new_pos) or cost > time
       new_time = time - cost - 1
       new_flow = @map[new_pos][:flow] * new_time
-      new_pressure = new_flow + dfs(new_pos, open + [new_pos], new_time)
+      new_pressure = new_flow + dfs(new_pos, (open + [new_pos]).sort, new_time)
       if new_pressure > val
         val = new_pressure
       end
@@ -56,22 +55,18 @@ end
 
 puts "Most pressure released: #{dfs}"
 
-@cache2 = {}
-def dfs2(pos = 'AA', open = Set[], time = 26)
-  state = [pos, open, time]
-  val = @cache2[state]
-  if val.nil?
-    val = dfs('AA', open, 26)
-    @valve_to_valve[pos].each do |new_pos, cost|
-      next if open.include?(new_pos) or cost > time
-      new_time = time - cost - 1
-      new_flow = @map[new_pos][:flow] * new_time
-      new_pressure = new_flow + dfs2(new_pos, open + [new_pos], new_time)
-      if new_pressure > val
-        val = new_pressure
-      end
+
+# Part 2
+def dfs2(pos = 'AA', open = [], time = 26)
+  val = dfs('AA', open, 26)
+  @valve_to_valve[pos].each do |new_pos, cost|
+    next if open.include?(new_pos) or cost > time
+    new_time = time - cost - 1
+    new_flow = @map[new_pos][:flow] * new_time
+    new_pressure = new_flow + dfs2(new_pos, (open + [new_pos]).sort, new_time)
+    if new_pressure > val
+      val = new_pressure
     end
-    @cache2[state] = val
   end
   return val
 end
