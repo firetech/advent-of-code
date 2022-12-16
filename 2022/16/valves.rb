@@ -1,3 +1,5 @@
+require 'set'
+
 file = ARGV[0] || 'input'
 #file = 'example1'
 
@@ -33,7 +35,7 @@ end
 end
 
 @cache = {}
-def dfs(pos = 'AA', open = [], time = 30)
+def dfs(pos = 'AA', open = Set[], time = 30)
   state = [pos, open, time]
   val = @cache[state]
   if val.nil?
@@ -55,7 +57,7 @@ end
 puts "Most pressure released: #{dfs}"
 
 @cache2 = {}
-def dfs2(pos = 'AA', open = [], time = 26)
+def dfs2(pos = 'AA', open = Set[], time = 26)
   state = [pos, open, time]
   val = @cache2[state]
   if val.nil?
