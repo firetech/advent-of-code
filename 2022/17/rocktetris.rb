@@ -81,14 +81,14 @@ while dropped < 1000000000000
   dropped += 1
 
   state = [ r, j, @chamber.last ].hash
-  if cycle == 0 and seen.has_key?(state) and dropped > 2022
-    c_dropped, c_height = seen[state]
-    cycle_length = dropped - c_dropped
+  if cycle == 0 and dropped > 2022 and not (last_seen = seen[state]).nil?
+    cycle_length = dropped - last_seen
     skip_cycles = (1000000000000 - dropped) / cycle_length
     dropped += skip_cycles * cycle_length
-    cycle = skip_cycles * (@chamber.length - c_height)
+    cycle = skip_cycles * (@chamber.length - height_after[last_seen])
+  else
+    seen[state] = dropped
   end
-  seen[state] = [dropped, @chamber.length + cycle]
   height_after[dropped] = @chamber.length + cycle
 end
 
