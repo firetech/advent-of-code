@@ -61,7 +61,6 @@ dropped = 0
 r = 0
 j = 0
 height_after = { 0 => 0 }
-max_with_height = { 0 => 0 }
 seen = {}
 requested_drops = [
   2022,          # Part 1
@@ -86,29 +85,25 @@ while dropped < needed
 
   height = @chamber.length
   height_after[dropped] = height
-  max_with_height[height] = dropped
 
-  # Check state based on the row below where the rock landed
-  state = [ r, j, @chamber[y - 1] ].hash
+  # Check the state based on the pattern of free spaces above the top rocks
+  free_top = (0..6).map { |x| height - 1 - (@chamber.rindex { |l| l[x] } or 0) }
+  state = [ r, j, free_top ].hash
   unless (last_seen = seen[state]).nil?
     last_height = height_after[last_seen]
-    # If last_seen wasn't the last drop giving the same total height, we're not
-    # done with the cycle, try again.
-    if max_with_height[last_height] == last_seen
-      cycle_len = dropped - last_seen
-      cycle_height = height - last_height
-      requested_drops.each do |req|
-        req_height = height_after[req]
-        if req_height.nil?
-          missing = req - dropped
-          skips = missing / cycle_len
-          diff = height_after[last_seen + missing % cycle_len] - last_height
-          req_height = height + skips * cycle_height + diff
-        end
-        puts "Tower height after #{req} rocks: #{req_height}"
+    cycle_len = dropped - last_seen
+    cycle_height = height - last_height
+    requested_drops.each do |req|
+      req_height = height_after[req]
+      if req_height.nil?
+        missing = req - dropped
+        skips = missing / cycle_len
+        diff = height_after[last_seen + missing % cycle_len] - last_height
+        req_height = height + skips * cycle_height + diff
       end
-      break
+      puts "Tower height after #{req} rocks: #{req_height}"
     end
+    break
   end
   seen[state] = dropped
 end
