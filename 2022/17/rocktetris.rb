@@ -62,9 +62,13 @@ dropped = 0
 r = 0
 j = 0
 height_after = { 0 => 0 }
-cycle = 0
 seen = {}
-while dropped < 1000000000000
+requested_drops = [
+  2022,          # Part 1
+  1000000000000  # Part 2
+]
+needed = requested_drops.max
+while dropped < needed
   rock = @rocks[r]
   r = (r + 1) % @rocks.length
   x = 2
@@ -81,19 +85,23 @@ while dropped < 1000000000000
   dropped += 1
 
   state = [ r, j, @chamber.last ].hash
-  if cycle == 0 and dropped > 2022 and not (last_seen = seen[state]).nil?
-    cycle_length = dropped - last_seen
-    skip_cycles = (1000000000000 - dropped) / cycle_length
-    dropped += skip_cycles * cycle_length
-    cycle = skip_cycles * (@chamber.length - height_after[last_seen])
-  else
-    seen[state] = dropped
+  if not (last_seen = seen[state]).nil?
+    cycle_len = dropped - last_seen
+    last_height = height_after[last_seen]
+    height = @chamber.length
+    cycle_height = height - last_height
+    requested_drops.each do |req|
+      req_height = height_after[req]
+      if req_height.nil?
+        missing = req - dropped
+        skips = missing / cycle_len
+        diff = height_after[last_seen + missing % cycle_len] - last_height
+        req_height = height + skips * cycle_height + diff
+      end
+      puts "Tower height after #{req} rocks: #{req_height}"
+    end
+    break
   end
-  height_after[dropped] = @chamber.length + cycle
+  seen[state] = dropped
+  height_after[dropped] = @chamber.length
 end
-
-# Part 1
-puts "Tower height after 2022 rocks: #{height_after[2022]}"
-
-# Part 2
-puts "Tower height after 1000000000000 rocks: #{height_after[1000000000000]}"
