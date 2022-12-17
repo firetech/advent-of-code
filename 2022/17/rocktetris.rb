@@ -19,19 +19,19 @@ file = ARGV[0] || 'input'
 
   [ '##',
     '##' ]
-].map { |r| r.map { |l| l.chars.map { |c| c == '#' } } }
+# Map to arrays of booleans, going up from bottom of rock
+].map { |r| r.reverse.map { |l| l.chars.map { |c| c == '#' } } }
 
 JET_TO_DX = { '<' => -1, '>' => 1 }
 @jets = File.read(file).rstrip.chars.map { |c| JET_TO_DX[c] }
 
 @chamber = []
 def collission(rock, x, y)
-  return true if x < 0 or x > 7 - rock.first.length
-  bottom_y = y - (rock.length - 1)
+  return true if x < 0 or x + rock.first.length > 7
   return true if y < 0
-  rock.reverse_each.with_index do |line, ry|
+  rock.each_with_index do |line, ry|
     line.each_with_index do |cell, rx|
-      if cell and (@chamber[bottom_y + ry][x + rx] rescue false)
+      if cell and (@chamber[y + ry][x + rx] rescue false)
         return true
       end
     end
@@ -40,11 +40,10 @@ def collission(rock, x, y)
 end
 
 def merge_rock(rock, x, y)
-  bottom_y = y - (rock.length - 1)
-  rock.reverse_each.with_index do |line, ry|
-    @chamber[bottom_y + ry] ||= Array.new(7, false)
+  rock.each_with_index do |line, ry|
+    @chamber[y + ry] ||= Array.new(7, false)
     line.each_with_index do |cell, rx|
-      @chamber[bottom_y + ry][x + rx] ||= cell
+      @chamber[y + ry][x + rx] ||= cell
     end
   end
 end
@@ -62,6 +61,7 @@ dropped = 0
 r = 0
 j = 0
 height_after = { 0 => 0 }
+max_with_height = { 0 => 0 }
 seen = {}
 requested_drops = [
   2022,          # Part 1
@@ -72,7 +72,7 @@ while dropped < needed
   rock = @rocks[r]
   r = (r + 1) % @rocks.length
   x = 2
-  y = @chamber.length + 2 + rock.length
+  y = @chamber.length + 3
   loop do
     dx = @jets[j]
     j = (j + 1) % @jets.length
@@ -84,24 +84,31 @@ while dropped < needed
   #puts; print_chamber
   dropped += 1
 
-  state = [ r, j, @chamber.last ].hash
-  if not (last_seen = seen[state]).nil?
-    cycle_len = dropped - last_seen
+  height = @chamber.length
+  height_after[dropped] = height
+  max_with_height[height] = dropped
+
+  # Check state based on the row below where the rock landed
+  state = [ r, j, @chamber[y - 1] ].hash
+  unless (last_seen = seen[state]).nil?
     last_height = height_after[last_seen]
-    height = @chamber.length
-    cycle_height = height - last_height
-    requested_drops.each do |req|
-      req_height = height_after[req]
-      if req_height.nil?
-        missing = req - dropped
-        skips = missing / cycle_len
-        diff = height_after[last_seen + missing % cycle_len] - last_height
-        req_height = height + skips * cycle_height + diff
+    # If last_seen wasn't the last drop giving the same total height, we're not
+    # done with the cycle, try again.
+    if max_with_height[last_height] == last_seen
+      cycle_len = dropped - last_seen
+      cycle_height = height - last_height
+      requested_drops.each do |req|
+        req_height = height_after[req]
+        if req_height.nil?
+          missing = req - dropped
+          skips = missing / cycle_len
+          diff = height_after[last_seen + missing % cycle_len] - last_height
+          req_height = height + skips * cycle_height + diff
+        end
+        puts "Tower height after #{req} rocks: #{req_height}"
       end
-      puts "Tower height after #{req} rocks: #{req_height}"
+      break
     end
-    break
   end
   seen[state] = dropped
-  height_after[dropped] = @chamber.length
 end
