@@ -14,9 +14,14 @@ File.read(file).rstrip.split("\n").each do |line|
   end
 end
 
-@usable_valves = @map.keys.select { |valve| @map[valve][:flow] > 0 }.sort
+@flow = @map.transform_values { |v| v[:flow] }
 
-@valve_to_valve = {}
+@bit = {}
+@map.keys.select { |v| @flow[v] > 0 }.sort.each_with_index do |v, i|
+  @bit[v] = 1 << i
+end
+
+@move = {}
 @map.each_key do |valve|
   queue = [valve]
   dist = { valve => 1 }
@@ -29,64 +34,35 @@ end
       queue << new_pos
     end
   end
-  @valve_to_valve[valve] = dist.select do |valve, _|
-    @usable_valves.include?(valve)
-  end
+  @move[valve] = dist.select { |v, _| @flow[v] > 0 }
 end
 
-def traverse(pos, left, time)
-  max_pressure = 0
-  left.each do |new_pos|
-    cost = @valve_to_valve[pos][new_pos]
-    next if cost > time
+def visit(time = 30, pos = 'AA', open = 0, flow = 0, max = Hash.new(0))
+  max[open] = flow if flow > max[open]
+  @move[pos].each do |new_pos, cost|
+    b = @bit[new_pos]
+    next if open & b != 0
     new_time = time - cost
-    this_pressure = @map[new_pos][:flow] * new_time
-    new_left = left - [new_pos]
-    # If we can't beat the current max by turning on all remaining valves NOW,
-    # there's no need to go further.
-    left_pressure = new_left.sum { |valve| @map[valve][:flow] } * new_time
-    next if this_pressure + left_pressure < max_pressure
-    new_pressure = this_pressure + yield(new_pos, new_left, new_time)
-    if new_pressure > max_pressure
-      max_pressure = new_pressure
-    end
+    next if new_time < 0
+    visit(new_time, new_pos, open | b, flow + new_time * @flow[new_pos], max)
   end
-  return max_pressure
+  return max
 end
 
 # Part 1
-@cache = {}
-def dfs(pos = 'AA', left = @usable_valves, time = 30)
-  state = [pos, left, time].hash
-  val = @cache[state]
-  if val.nil?
-    val = traverse(pos, left, time) do |new_pos, new_left, new_time|
-      dfs(new_pos, new_left, new_time)
-    end
-    @cache[state] = val
-  end
-  return val
-end
-
-puts "Most pressure released: #{dfs}"
-
+puts "Most pressure released: #{visit.values.max}"
 
 # Part 2
-def dfs2(pos = 'AA', left = @usable_valves, time = 26)
-  val = traverse(pos, left, time) do |new_pos, new_left, new_time|
-    dfs2(new_pos, new_left, new_time)
+visited2 = visit(26).sort { |(_, v1), (_, v2)| v2 <=> v1 }
+max = visited2.first.last
+val = 0
+visited2.each do |o1, v1|
+  break if v1 + max < val
+  visited2.each do |o2, v2|
+    next if o1 & o2 != 0
+    sum = v1 + v2
+    break if sum < val
+    val = sum
   end
-  return (other = dfs('AA', left, 26)) > val ? other : val
 end
-
-puts
-print 'Traversing with elephant.'
-t = Thread.new { loop { sleep 1; print '.' } }
-begin
-  val = dfs2
-ensure
-  t.kill
-  t.join
-end
-puts ' Done.'
 puts "Most pressure released with elephant: #{val}"
