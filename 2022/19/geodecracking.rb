@@ -1,5 +1,3 @@
-require '../../lib/multicore'
-
 file = ARGV[0] || 'input'
 #file = 'example1'
 
@@ -8,91 +6,87 @@ File.read(file).rstrip.split("\n").each do |line|
   case line
   when /\ABlueprint (\d+): Each ore robot costs (\d+) ore\. Each clay robot costs (\d+) ore\. Each obsidian robot costs (\d+) ore and (\d+) clay\. Each geode robot costs (\d+) ore and (\d+) obsidian\.\z/
     @blueprints[Regexp.last_match(1).to_i] = [
-      [Regexp.last_match(2).to_i, 0, 0, 0],
-      [Regexp.last_match(3).to_i, 0, 0, 0],
-      [Regexp.last_match(4).to_i, Regexp.last_match(5).to_i, 0, 0],
-      [Regexp.last_match(6).to_i, 0, Regexp.last_match(7).to_i, 0]
+      Regexp.last_match(2).to_i,
+      Regexp.last_match(3).to_i,
+      Regexp.last_match(4).to_i, Regexp.last_match(5).to_i,
+      Regexp.last_match(6).to_i, Regexp.last_match(7).to_i
     ]
   else
     raise "Malformed line: '#{line}'"
   end
 end
 
-def run(blueprint, time, robots = [1, 0, 0, 0], materials = [0, 0, 0, 0],
-        cache = {})
-  return materials.last if time == 0
+def run(time, blueprint)
+  stack = [[1,0,0,0, 0,0,0,0, time]]
+  max_geo = 0
+  c_ore_ore, c_cly_ore, c_obs_ore, c_obs_cly, c_geo_ore, c_geo_obs = blueprint
+  max_c_ore = [c_ore_ore, c_cly_ore, c_obs_ore, c_geo_ore].max
+  until stack.empty?
+    r_ore, r_cly, r_obs, r_geo, ore, cly, obs, geo, time = stack.pop
 
-  cache[[time, robots, materials].hash] ||= begin
-    possibilities = []
-    if materials.first < blueprint.map(&:first).max
-      possibilities << -1
-    end
-    blueprint.each_with_index do |costs, r|
-      if costs.each_with_index.all? { |amount, m| materials[m] >= amount } and
-          (r == 3 or blueprint.any? { |c| c[r] > robots[r] })
-        possibilities << r
-      end
-    end
-    if possibilities.include?(3)
-      possibilities = [3]
-    end
-    max_geodes = 0
-    possibilities.each do |build|
-      if build == -1
-        cost = []
-        new_robots = robots
-      else
-        cost = blueprint[build]
-        new_robots = robots.clone
-        new_robots[build] += 1
-      end
-      new_materials = materials.map.with_index do |amount, m|
-        amount + robots[m] - (cost[m] or 0)
-      end
-      geodes = run(blueprint, time - 1, new_robots, new_materials, cache)
-      max_geodes = geodes if geodes > max_geodes
+    max_geo = geo if geo > max_geo
+    next if time == 0
+    # If we can't beat the current best even by producing one geode robot per
+    # minute from now, no need to continue
+    next if geo + time*r_geo + time*(time-1)/2 <= max_geo
+
+    new_ore = ore + r_ore
+    new_cly = cly + r_cly
+    new_obs = obs + r_obs
+    new_geo = geo + r_geo
+
+    if ore >= c_geo_ore and obs >= c_geo_obs
+      # Build geode robot
+      stack << [r_ore, r_cly, r_obs, r_geo+1,
+                new_ore-c_geo_ore, new_cly, new_obs-c_geo_obs, new_geo,
+                time-1]
+      next # If we can build a geode robot, no need to try anything else
     end
 
-    max_geodes
-  end
-end
+    nothing_to_build = true
+    if r_obs < c_geo_obs and ore >= c_obs_ore and cly >= c_obs_cly
+      nothing_to_build = false
+      # Build obsidian robot
+      stack << [r_ore, r_cly, r_obs+1, r_geo,
+                new_ore-c_obs_ore, new_cly-c_obs_cly, new_obs, new_geo,
+                time-1]
+    end
+    if r_cly < c_obs_cly and ore >= c_cly_ore
+      nothing_to_build = false
+      # Build clay robot
+      stack << [r_ore, r_cly+1, r_obs, r_geo,
+                new_ore-c_cly_ore, new_cly, new_obs, new_geo,
+                time-1]
+    end
+    if r_ore < max_c_ore and ore >= c_ore_ore
+      nothing_to_build = false
+      # Build ore robot
+      stack << [r_ore+1, r_cly, r_obs, r_geo,
+                new_ore-c_ore_ore, new_cly, new_obs, new_geo,
+                time-1]
+    end
 
-quality = 0
-product = 1
-stop = nil
-begin
-  input, output, stop = Multicore.run do |worker_in, worker_out|
-    loop do
-      part, id, blueprint, time = worker_in[]
-      worker_out[[part, id, run(blueprint, time)]]
+    if ore < max_c_ore or nothing_to_build
+      # If we don't have ores needed for all types (or can't build), try waiting
+      # (Always build a robot if we have the max needed ores)
+      stack << [r_ore, r_cly, r_obs, r_geo,
+                new_ore, new_cly, new_obs, new_geo,
+                time-1]
     end
   end
-  @blueprints.each do |id, blueprint|
-    # Part 1
-    input << [1, id, blueprint, 24]
-
-    # Part 2
-    if id <= 3
-      input << [2, id, blueprint, 32]
-    end
-  end
-  (@blueprints.length + 3).times do
-    part, id, geodes = output.pop
-    case part
-    when 1
-      # Part 1
-      quality += id * geodes
-    when 2
-      # Part 2
-      product *= geodes
-    end
-  end
-ensure
-  stop[] unless stop.nil?
+  return max_geo
 end
 
 # Part 1
+quality = 0
+@blueprints.each do |id, blueprint|
+  quality += id * run(24, blueprint)
+end
 puts "Sum of quality levels: #{quality}"
 
 # Part 2
+product = 1
+@blueprints.each do |id, blueprint|
+  product *= run(32, blueprint) if id <= 3
+end
 puts "Product of first three blueprints: #{product}"
