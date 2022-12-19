@@ -18,12 +18,15 @@ File.read(file).rstrip.split("\n").each do |line|
   end
 end
 
-@cache = {}
-def run(blueprint, time = 24, robots = [1, 0, 0, 0], materials = [0, 0, 0, 0])
+def run(blueprint, time, robots = [1, 0, 0, 0], materials = [0, 0, 0, 0],
+        cache = {})
   return materials.last if time == 0
 
-  @cache[[blueprint, time, robots, materials].hash] ||= begin
-    possibilities = [ -1 ]
+  cache[[time, robots, materials].hash] ||= begin
+    possibilities = []
+    if materials.first < blueprint.map(&:first).max
+      possibilities << -1
+    end
     blueprint.each_with_index do |costs, r|
       if costs.each_with_index.all? { |amount, m| materials[m] >= amount } and
           (r == 3 or blueprint.any? { |c| c[r] > robots[r] })
@@ -32,8 +35,6 @@ def run(blueprint, time = 24, robots = [1, 0, 0, 0], materials = [0, 0, 0, 0])
     end
     if possibilities.include?(3)
       possibilities = [3]
-#    elsif possibilities.include?(2)
-#      possibilities = [2]
     end
     max_geodes = 0
     possibilities.each do |build|
@@ -48,7 +49,7 @@ def run(blueprint, time = 24, robots = [1, 0, 0, 0], materials = [0, 0, 0, 0])
       new_materials = materials.map.with_index do |amount, m|
         amount + robots[m] - (cost[m] or 0)
       end
-      geodes = run(blueprint, time - 1, new_robots, new_materials)
+      geodes = run(blueprint, time - 1, new_robots, new_materials, cache)
       max_geodes = geodes if geodes > max_geodes
     end
 
@@ -57,20 +58,41 @@ def run(blueprint, time = 24, robots = [1, 0, 0, 0], materials = [0, 0, 0, 0])
 end
 
 quality = 0
+product = 1
 stop = nil
 begin
   input, output, stop = Multicore.run do |worker_in, worker_out|
-    id, blueprint = worker_in[]
-    worker_out[id * run(blueprint)]
+    loop do
+      part, id, blueprint, time = worker_in[]
+      worker_out[[part, id, run(blueprint, time)]]
+    end
   end
   @blueprints.each do |id, blueprint|
-    input << [id, blueprint]
+    # Part 1
+    input << [1, id, blueprint, 24]
+
+    # Part 2
+    if id <= 3
+      input << [2, id, blueprint, 32]
+    end
   end
-  @blueprints.length.times do
-    quality += output.pop
+  (@blueprints.length + 3).times do
+    part, id, geodes = output.pop
+    case part
+    when 1
+      # Part 1
+      quality += id * geodes
+    when 2
+      # Part 2
+      product *= geodes
+    end
   end
 ensure
   stop[] unless stop.nil?
 end
 
+# Part 1
 puts "Sum of quality levels: #{quality}"
+
+# Part 2
+puts "Product of first three blueprints: #{product}"
