@@ -1,3 +1,5 @@
+require_relative '../../lib/multicore'
+
 file = ARGV[0] || 'input'
 #file = 'example1'
 
@@ -40,14 +42,13 @@ def run(time, blueprint)
     new_cly = cly + r_cly
     new_obs = obs + r_obs
     new_geo = geo + r_geo
-    new_mask = mask
     new_time = time - 1
     if mask & MASK_GEO != 0 and ore >= c_geo_ore and obs >= c_geo_obs
       # Build geode robot
       stack << [r_ore, r_cly, r_obs, r_geo+1,
                 new_ore-c_geo_ore, new_cly, new_obs-c_geo_obs, new_geo,
                 MASK_ALL, new_time]
-      new_mask &= ~MASK_GEO
+      mask &= ~MASK_GEO
     end
     if mask & MASK_OBS != 0 and r_obs < c_geo_obs and
         ore >= c_obs_ore and cly >= c_obs_cly
@@ -55,44 +56,72 @@ def run(time, blueprint)
       stack << [r_ore, r_cly, r_obs+1, r_geo,
                 new_ore-c_obs_ore, new_cly-c_obs_cly, new_obs, new_geo,
                 MASK_ALL, new_time]
-      new_mask &= ~MASK_OBS
+      mask &= ~MASK_OBS
     end
     if mask & MASK_CLY != 0 and r_cly < c_obs_cly and ore >= c_cly_ore
       # Build clay robot
       stack << [r_ore, r_cly+1, r_obs, r_geo,
                 new_ore-c_cly_ore, new_cly, new_obs, new_geo,
                 MASK_ALL, new_time]
-      new_mask &= ~MASK_CLY
+      mask &= ~MASK_CLY
     end
     if mask & MASK_ORE != 0 and r_ore < max_c_ore and ore >= c_ore_ore
       # Build ore robot
       stack << [r_ore+1, r_cly, r_obs, r_geo,
                 new_ore-c_ore_ore, new_cly, new_obs, new_geo,
                 MASK_ALL, new_time]
-      new_mask &= ~MASK_ORE
+      mask &= ~MASK_ORE
     end
 
-    if ore < max_c_ore or new_mask == mask
-      # If we don't have ores needed for all types (or can't build), try waiting
+    if mask != 0
       # (Always build a robot if we have the max needed ores)
       stack << [r_ore, r_cly, r_obs, r_geo,
                 new_ore, new_cly, new_obs, new_geo,
-                new_mask, new_time]
+                mask, new_time]
     end
   end
   return max_geo
 end
 
-# Part 1
 quality = 0
-@blueprints.each do |id, blueprint|
-  quality += id * run(24, blueprint)
+product = 1
+stop = nil
+begin
+  input, output, stop = Multicore.run do |worker_in, worker_out|
+    until (part, id, blueprint, time = worker_in[]).nil?
+      worker_out[[part, id, run(time, blueprint)]]
+    end
+  end
+  inputs = 0
+  @blueprints.each do |id, blueprint|
+    # Part 1
+    input << [1, id, blueprint, 24]
+    inputs += 1
+
+    # Part 2
+    if id <= 3
+      input << [2, id, blueprint, 32]
+      inputs += 1
+    end
+  end
+  input.close
+  inputs.times do
+    part, id, geodes = output.pop
+    case part
+    when 1
+      # Part 1
+      quality += id * geodes
+    when 2
+      # Part 2
+      product *= geodes
+    end
+  end
+ensure
+  stop[] unless stop.nil?
 end
-puts "Sum of quality levels: #{quality}"
+
+# Part 1
+puts "Sum of quality levels (time 24): #{quality}"
 
 # Part 2
-product = 1
-@blueprints.each do |id, blueprint|
-  product *= run(32, blueprint) if id <= 3
-end
-puts "Product of first three blueprints: #{product}"
+puts "Product of first three blueprints (time 32): #{product}"
