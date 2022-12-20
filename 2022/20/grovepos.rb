@@ -2,36 +2,25 @@ file = ARGV[0] || 'input'
 #file = 'example1'
 
 @numbers = File.read(file).rstrip.split("\n").map(&:to_i)
-INDEXES = [1000, 2000, 3000]
+
+def mixed_sum(values, mix_count = 1)
+  mix_with_index = values.each_with_index.to_a
+  pos_mod = values.length - 1
+  mix_count.times do
+    values.each_index do |i|
+      curr_i = mix_with_index.index { |_, orig_i| orig_i == i }
+      item = mix_with_index.delete_at(curr_i)
+      new_i = (curr_i + item.first) % pos_mod
+      mix_with_index.insert(new_i, item)
+    end
+  end
+  i = mix_with_index.index { |val, _| val == 0 }
+  return 3.times.sum { mix_with_index[(i += 1000) % values.length].first }
+end
 
 # Part 1
-with_index = @numbers.each_with_index.to_a
-0.upto(@numbers.length - 1) do |i|
-  ci = with_index.index { |_, oi| oi == i }
-  curr = with_index[ci]
-  with_index.delete_at(ci)
-  ni = (ci + curr.first) % (@numbers.length - 1)
-  with_index.insert(ni, curr)
-end
-
-zero = with_index.index { |val, _| val == 0 }
-sum = INDEXES.sum { |i| with_index[(zero + i) % @numbers.length].first }
-puts "Sum of grove coordinates: #{sum}"
+puts "Sum of grove coordinates: #{mixed_sum(@numbers)}"
 
 # Part 2
-KEY = 811589153
-
-with_index = @numbers.map.with_index { |val, i| [val * KEY, i] }
-10.times do
-  0.upto(@numbers.length - 1) do |i|
-    ci = with_index.index { |_, oi| oi == i }
-    curr = with_index[ci]
-    with_index.delete_at(ci)
-    ni = (ci + curr.first) % (@numbers.length - 1)
-    with_index.insert(ni, curr)
-  end
-end
-
-zero = with_index.index { |val, _| val == 0 }
-sum = INDEXES.sum { |i| with_index[(zero + i) % @numbers.length].first }
-puts "Sum of grove coordinates with decryption key: #{sum}"
+key_nums = @numbers.map { |n| n * 811589153 }
+puts "Sum of grove coordinates with decryption key: #{mixed_sum(key_nums, 10)}"
