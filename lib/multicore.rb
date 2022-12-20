@@ -1,4 +1,5 @@
 require 'etc'
+require 'timeout'
 
 # Helper function for running processing on multiple CPU cores. Threading isn't
 # sufficient in normal Ruby due to the Global Interpreter Lock limiting
@@ -9,6 +10,7 @@ module Multicore
 
   IPC_TAIL = '__IPC_OUTPUT_END__'
   IPC_WAIT = '__IPC_WAIT_INPUT__'
+  IPC_ERR = '__IPC_ERROR__'
   IPC_EXIT = '__IPC_CHILD_EXIT__'
 
   public
@@ -16,6 +18,7 @@ module Multicore
     input_queue = Queue.new
     output_queue = Queue.new
     threads = []
+    err_lock = Mutex.new
     if RUBY_PLATFORM == 'java'
       # JRuby doesn't have a GIL, just use Threads
       worker_input = -> { input_queue.pop }
@@ -56,8 +59,9 @@ module Multicore
               end
               begin
                 yield worker_input, worker_output, t, nthreads
-              rescue Errno::EPIPE
-                # Ignore
+              rescue Exception => e
+                worker_output[IPC_ERR]
+                worker_output[e]
               ensure
                 worker_output[IPC_EXIT]
                 write_from_fork.close
@@ -67,18 +71,29 @@ module Multicore
             end
             write_from_fork.close
             read_to_fork.close
-            while child_running?(child)
-              begin
-                read = read_input[read_from_fork]
-                break if read == IPC_EXIT
-                if read == IPC_WAIT
-                  write_output[write_to_fork, input_queue.pop]
-                else
-                  output_queue << read
+            until read_from_fork.eof?
+              read = read_input[read_from_fork]
+              case read
+              when IPC_WAIT
+                write_output[write_to_fork, input_queue.pop]
+              when IPC_ERR
+                e = read_input[read_from_fork]
+                err_lock.synchronize do
+                  print_exception("Child #{t} raised", e)
                 end
-              rescue Errno::EPIPE
+              when IPC_EXIT
                 break
+              else
+                output_queue << read
               end
+            end
+            # Expect child to exit quickly after pipe is closed.
+            begin
+              Timeout::timeout(1) { Process.wait(child) }
+            rescue Errno::ECHILD
+              # Ignore
+            rescue Timeout::Error
+              raise 'Output reached EOF and child did not stop.'
             end
           ensure
             [read_to_fork, write_to_fork].compact.each(&:close)
@@ -98,10 +113,7 @@ module Multicore
         begin
           thr.join
         rescue Exception => e
-          puts "Thread #{t} raised: #{e.message}"
-          (e.backtrace or ['(No backtrace)']).each do |line|
-            puts "\t#{line}"
-          end
+          print_exception("Thread #{t} raised", e)
         end
       end
     end
@@ -115,6 +127,14 @@ module Multicore
       return value.nil?
     rescue Errno::ECHILD
       return false
+    end
+  end
+
+  private
+  def self.print_exception(header, e)
+    puts "#{header}: #{e.message}"
+    (e.backtrace or ['(No backtrace)']).each do |line|
+      puts "\t#{line}"
     end
   end
 end
