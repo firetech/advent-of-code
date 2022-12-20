@@ -1,60 +1,37 @@
 file = ARGV[0] || 'input'
 #file = 'example1'
 
-class ListNum
-  attr_reader :val
-  attr_accessor :prev, :next
+@numbers = File.read(file).rstrip.split("\n").map(&:to_i)
+INDEXES = [1000, 2000, 3000]
 
-  def initialize(val, left = nil, right = nil)
-    @val = val
-    @prev = left || self
-    @next = right || self
+# Part 1
+with_index = @numbers.each_with_index.to_a
+0.upto(@numbers.length - 1) do |i|
+  ci = with_index.index { |_, oi| oi == i }
+  curr = with_index[ci]
+  with_index.delete_at(ci)
+  ni = (ci + curr.first) % (@numbers.length - 1)
+  with_index.insert(ni, curr)
+end
+
+zero = with_index.index { |val, _| val == 0 }
+sum = INDEXES.sum { |i| with_index[(zero + i) % @numbers.length].first }
+puts "Sum of grove coordinates: #{sum}"
+
+# Part 2
+KEY = 811589153
+
+with_index = @numbers.map.with_index { |val, i| [val * KEY, i] }
+10.times do
+  0.upto(@numbers.length - 1) do |i|
+    ci = with_index.index { |_, oi| oi == i }
+    curr = with_index[ci]
+    with_index.delete_at(ci)
+    ni = (ci + curr.first) % (@numbers.length - 1)
+    with_index.insert(ni, curr)
   end
 end
 
-@nodes = []
-File.read(file).rstrip.split("\n").each do |line|
-  node = ListNum.new(line.to_i, @nodes.last, @nodes.first)
-  unless @nodes.empty?
-    @nodes.last.next = node
-    @nodes.first.prev = node
-  end
-  @nodes << node
-end
-
-@zero = nil
-@nodes.each do |node|
-  if node.val > 0
-    (node.val).times do
-      n = node.next
-      node.prev.next = n
-      n.prev = node.prev
-      n.next.prev = node
-      node.next = n.next
-      n.next = node
-      node.prev = n
-    end
-  elsif node.val < 0
-    (-node.val).times do
-      p = node.prev
-      node.next.prev = p
-      p.next = node.next
-      p.prev.next = node
-      node.prev = p.prev
-      node.next = p
-      p.prev = node
-    end
-  else
-    @zero = node
-  end
-end
-
-sum = 0
-node = @zero
-3.times do
-  1000.times { node = node.next }
-  sum += node.val
-end
-
-pp sum
-
+zero = with_index.index { |val, _| val == 0 }
+sum = INDEXES.sum { |i| with_index[(zero + i) % @numbers.length].first }
+puts "Sum of grove coordinates with decryption key: #{sum}"
