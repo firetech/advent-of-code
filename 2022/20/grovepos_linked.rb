@@ -2,8 +2,7 @@ file = ARGV[0] || 'input'
 #file = 'example1'
 
 class ListNum
-  attr_reader :val
-  attr_accessor :prev, :next
+  attr_accessor :val, :prev, :next
 
   def initialize(val, left = nil, right = nil)
     @val = val
@@ -12,59 +11,37 @@ class ListNum
   end
 end
 
-@nodes1 = []  # Part 1
-@nodes2 = []  # Part 2
+@nodes = []
 File.read(file).rstrip.split("\n").each do |line|
-  # Part 1
-  node1 = ListNum.new(line.to_i, @nodes1.last, @nodes1.first)
-  unless @nodes1.empty?
-    @nodes1.last.next = node1
-    @nodes1.first.prev = node1
+  node = ListNum.new(line.to_i, @nodes.last, @nodes.first)
+  unless @nodes.empty?
+    @nodes.last.next = node
+    @nodes.first.prev = node
   end
-  @nodes1 << node1
-
-  # Part 2
-  node2 = ListNum.new(line.to_i * 811589153, @nodes2.last, @nodes2.first)
-  unless @nodes2.empty?
-    @nodes2.last.next = node2
-    @nodes2.first.prev = node2
-  end
-  @nodes2 << node2
+  @nodes << node
 end
 
-def mix(nodes)
+def mixed_sum(count = 1)
   zero = nil
-  nodes.each do |node|
-    if node.val > 0
-      moves = node.val % (nodes.length - 1)
+  pos_mod = @nodes.length - 1
+  count.times do
+    @nodes.each do |node|
+      if node.val == 0
+        zero = node
+        next
+      end
+      moves = node.val % pos_mod # Never negative (in Ruby)
       next if moves == 0
       n = node.next
       node.prev.next = n
-      n.prev = node.prev
-      (moves - 1).times { n = n.next }
-      n.next.prev = node
-      node.next = n.next
-      n.next = node
-      node.prev = n
-    elsif node.val < 0
-      moves = (-node.val) % (nodes.length - 1)
-      next if moves == 0
-      p = node.prev
-      node.next.prev = p
-      p.next = node.next
-      (moves - 1).times { p = p.prev }
-      p.prev.next = node
-      node.prev = p.prev
-      node.next = p
-      p.prev = node
-    else
-      zero = node
+      node.next.prev = node.prev
+      moves.times { n = n.next }
+      n.prev.next = node
+      node.prev = n.prev
+      n.prev = node
+      node.next = n
     end
   end
-  return zero
-end
-
-def grove_sum(zero)
   node = zero
   return 3.times.sum do
     1000.times { node = node.next }
@@ -73,12 +50,15 @@ def grove_sum(zero)
 end
 
 # Part1
-puts "Sum of grove coordinates: #{grove_sum(mix(@nodes1))}"
+puts "Sum of grove coordinates: #{mixed_sum}"
 
 # Part 2
-zero = nil
-10.times do
-  zero = mix(@nodes2)
+# Reset nodes and multiply values by decryption key
+last = @nodes.last
+@nodes.each do |node|
+  node.prev = last
+  last.next = node
+  last = node
+  node.val *= 811589153
 end
-
-puts "Sum of grove coordinates with decryption key: #{grove_sum(zero)}"
+puts "Sum of grove coordinates with decryption key: #{mixed_sum(10)}"
