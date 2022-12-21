@@ -22,7 +22,7 @@ def monkey_value(monkey)
   case val
   when Array
     return "(#{monkey_value(val[0])} #{val[1]} #{monkey_value(val[2])})"
-  when Float, Symbol
+  when Integer, Float, Symbol
     return val
   else
     raise 'Ehm?'
@@ -44,18 +44,20 @@ elsif val2.include?('x')
   value = eval(val1)
   equation = @monkeys[:root][2]
 end
+search = 0..1e20
+min_out = (@monkeys[:humn] = search.min; eval(monkey_value(equation)))
+max_out = (@monkeys[:humn] = search.max; eval(monkey_value(equation)))
+if min_out < value and max_out > value
+  check = proc { value <=> eval(monkey_value(equation)) }
+elsif min_out > value and max_out < value
+  check = proc { eval(monkey_value(equation)) <=> value }
+else
+  raise "Output doesn't seem to be linear"
+end
 humn_val = (0..1e20).bsearch do |i|
   @monkeys[:humn] = i
-  eval(monkey_value(equation)) <=> value
+  check[]
 end
-if humn_val.nil?
-  # Try other direction, bsearch requires its outputs to be ordered positive
-  # before zero before negative to work.
-  humn_val = (0..1e20).bsearch do |i|
-    @monkeys[:humn] = i
-    value <=> eval(monkey_value(equation))
-  end
-  raise "Wat." if humn_val.nil?
-end
+raise "Wat." if humn_val.nil?
 raise "Rounding error" if humn_val.floor != humn_val
 puts "You need to yell #{humn_val.floor}"
