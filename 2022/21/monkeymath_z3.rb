@@ -25,7 +25,7 @@ def monkey_value(monkey)
   when Float, Z3::IntExpr
     return val
   else
-    raise "Unexpected class: #{val.class.name}"
+    raise "Unexpected class: #{val.class.name} (#{val.inspect})"
   end
 end
 

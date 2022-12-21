@@ -21,42 +21,42 @@ def monkey_value(monkey)
   val = @monkeys[monkey]
   case val
   when Array
-    return "(#{monkey_value(val[0])} #{val[1]} #{monkey_value(val[2])})"
-  when Integer, Float, Symbol
+    return monkey_value(val[0]).send(val[1], monkey_value(val[2]))
+  when Float
     return val
+  when :humn
+    raise TypeError, 'Found humn'
   else
-    raise 'Ehm?'
+    raise "Unexpected class: #{val.class.name} (#{val.inspect})"
   end
 end
 
 # Part 1
-root_val = eval(monkey_value(:root))
+root_val = monkey_value(:root)
 raise "Rounding error" if root_val.floor != root_val
 puts "Root monkey yells #{root_val.floor}"
 
 # Part 2
-@monkeys[:humn] = :x
-val1 = monkey_value(@monkeys[:root][0])
-val2 = monkey_value(@monkeys[:root][2])
-
-if val1.include?('x')
-  equation = @monkeys[:root][0]
-  value = eval(val2)
-elsif val2.include?('x')
-  value = eval(val1)
+@monkeys[:humn] = :humn
+begin
+  value = monkey_value(@monkeys[:root][0])
   equation = @monkeys[:root][2]
+rescue TypeError
+  value = monkey_value(@monkeys[:root][2])
+  equation = @monkeys[:root][0]
 end
-search = 0..1e20
-min_out = (@monkeys[:humn] = search.min; eval(monkey_value(equation)))
-max_out = (@monkeys[:humn] = search.max; eval(monkey_value(equation)))
+
+search_range = 0.0..1e20
+min_out = (@monkeys[:humn] = search_range.min; monkey_value(equation))
+max_out = (@monkeys[:humn] = search_range.max; monkey_value(equation))
 if min_out < value and max_out > value
-  check = proc { value <=> eval(monkey_value(equation)) }
+  check = proc { value <=> monkey_value(equation) }
 elsif min_out > value and max_out < value
-  check = proc { eval(monkey_value(equation)) <=> value }
+  check = proc { monkey_value(equation) <=> value }
 else
   raise "Output doesn't seem to be linear"
 end
-humn_val = (0..1e20).bsearch do |i|
+humn_val = search_range.bsearch do |i|
   @monkeys[:humn] = i
   check[]
 end
