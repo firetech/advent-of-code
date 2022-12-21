@@ -29,10 +29,12 @@ def monkey_value(monkey)
   end
 end
 
+# Part 1
 root_val = eval(monkey_value(:root))
 raise "Rounding error" if root_val.floor != root_val
 puts "Root monkey yells #{root_val.floor}"
 
+# Part 2
 @monkeys[:humn] = :x
 val1 = monkey_value(@monkeys[:root][0])
 val2 = monkey_value(@monkeys[:root][2])
