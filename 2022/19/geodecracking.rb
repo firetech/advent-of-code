@@ -74,7 +74,9 @@ def run(time, blueprint)
     end
 
     if mask != 0
-      # (Always build a robot if we have the max needed ores)
+      # Try waiting, but forbid building robot types we could build this round.
+      # Waiting to build a robot we can build now never makes sense.
+      # If we can build all robot types now, we can skip waiting altogether.
       stack << [r_ore, r_cly, r_obs, r_geo,
                 new_ore, new_cly, new_obs, new_geo,
                 mask, new_time]
