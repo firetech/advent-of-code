@@ -18,7 +18,7 @@ puts "1202 output: #{i[0]}"
     i[2] = verb
     i.run
     if i[0] == 19690720
-      puts "19690720 input: #{noun}#{verb}"
+      puts '19690720 input: %d%02d' % [noun, verb]
       break
     end
   end
