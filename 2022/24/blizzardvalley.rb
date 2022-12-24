@@ -1,5 +1,3 @@
-require 'set'
-
 file = ARGV[0] || 'input'
 #file = 'example1'
 
@@ -10,78 +8,91 @@ BLIZZARD_DELTA = {
   '>' => [ 1,  0]
 }
 
-@map = []
+map = File.read(file).rstrip.split("\n").map(&:chars)
+@width = map.first.length - 2
+@height = map.length - 2
+
+@x_bits = Math.log2(map.first.length - 1).ceil
+@x_mask = (1 << @x_bits) - 1
+def to_pos(x,y)
+  return y << @x_bits | x
+end
+def from_pos(pos)
+  return pos & @x_mask, pos >> @x_bits
+end
+
+# y positions are offset by +1 to fit a wall above the start position
+
+@walls = Hash.new(false)
 @blizzards = {}
-File.read(file).rstrip.split("\n").each_with_index do |line, y|
-  map_line = []
-  line.each_char.with_index do |char, x|
+map.each_with_index do |line, y|
+  line.each_with_index do |char, x|
     case char
     when *BLIZZARD_DELTA.keys
-      @blizzards[[x, y]] = [BLIZZARD_DELTA[char]]
-      map_line[x] = '.'
+      @blizzards[to_pos(x, y + 1)] = [BLIZZARD_DELTA[char]]
     when '.'
-      map_line[x] = '.'
+      # Ignore
     when '#'
-      map_line[x] = '#'
+      @walls[to_pos(x, y + 1)] = true
     else
       raise "Unexpected character: '#{char}'"
     end
   end
-  @map[y] = map_line
 end
-@width = @map.first.length - 2
-@height = @map.length - 2
-@start = [@map.first.index('.'), 0]
-@goal = [@map.last.index('.'), @map.length - 1]
 
-MOVES = [
-  [ 1,  0],
-  [ 0,  1],
-  [ 0,  0],
-  [-1,  0],
-  [ 0, -1]
-]
+start_x = map.first.index('.')
+@start = to_pos(start_x, 1)
+@walls[to_pos(start_x, 0)] = true # This wall offsets all y with +1
+goal_x = map.last.index('.')
+goal_y = map.length
+@goal = to_pos(goal_x, goal_y)
+@walls[to_pos(goal_x, goal_y + 1)] = true
 
+MOVES = [[0, 0], *BLIZZARD_DELTA.values]
 
-positions = Set[@start]
+positions = [@start]
 time = 0
 trip = 1
 goals = [@goal, @start, @goal]
 goal = goals.shift
 until goal.nil?
   new_blizzards = {}
-  @blizzards.each do |(x, y), deltas|
+  # Move blizzards
+  @blizzards.each do |pos, deltas|
+    x, y = from_pos(pos)
     deltas.each do |dx, dy|
       nx = x + dx
-      nx += @width if nx < 1
-      nx -= @width if nx > @width
       ny = y + dy
-      ny += @height if ny < 1
-      ny -= @height if ny > @height
-      new_blizzards[[nx, ny]] ||= []
-      new_blizzards[[nx, ny]] << [dx, dy]
+      new_pos = to_pos(nx, ny)
+      if @walls.has_key?(new_pos)
+        new_pos = to_pos(nx - dx * @width, ny - dy * @height)
+      end
+      new_blizzards[new_pos] ||= []
+      new_blizzards[new_pos] << [dx, dy]
     end
   end
   @blizzards = new_blizzards
 
-  new_positions = Set[]
-  positions.each do |x, y|
+  # Move expedition
+  new_positions = Hash.new(false)
+  positions.each do |pos|
+    x, y = from_pos(pos)
     MOVES.each do |dx, dy|
-      nx = x + dx
-      ny = y + dy
-      next if ny < 0 or ny >= @map.length or @map[ny][nx] == '#'
-      next if @blizzards.has_key?([nx, ny])
-      new_positions << [nx, ny]
+      new_pos = to_pos(x + dx, y + dy)
+      next if @blizzards.has_key?(new_pos) or @walls.has_key?(new_pos)
+      new_positions[new_pos] = true
     end
   end
-  positions = new_positions
+  raise "Ehm?" if new_positions.empty?
 
   time += 1
 
-  if positions.include?(goal)
+  if new_positions.has_key?(goal)
     puts "Done with trip #{trip} in #{time} minutes"
-    positions = Set[goal]
+    positions = [goal]
     goal = goals.shift
     trip += 1
+  else
+    positions = new_positions.keys
   end
 end
