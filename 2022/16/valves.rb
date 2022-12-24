@@ -53,12 +53,12 @@ end
 puts "Most pressure released: #{visit.values.max}"
 
 # Part 2
-visited2 = visit(26).sort { |(_, v1), (_, v2)| v2 <=> v1 }
+visited2 = visit(26).sort_by(&:last)
 max = visited2.first.last
 val = 0
-visited2.each do |o1, v1|
+until (o1, v1 = visited2.pop).nil?
   break if v1 + max < val
-  visited2.each do |o2, v2|
+  visited2.reverse_each do |o2, v2|
     next if o1 & o2 != 0
     sum = v1 + v2
     break if sum < val
