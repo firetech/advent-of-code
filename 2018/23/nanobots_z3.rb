@@ -48,12 +48,10 @@ end
 x = Z3.Int('x')
 y = Z3.Int('y')
 z = Z3.Int('z')
-in_range = Z3.Int('in_range')
 expr = @bots.sum do |bot|
   Z3.IfThenElse(z3_dist(bot.x,bot.y,bot.z, x,y,z) <= bot.range, 1, 0)
 end
-@opt.assert(in_range == expr)
-@opt.maximize(in_range)
+@opt.maximize(expr)
 @opt.minimize(z3_dist(0,0,0, x,y,z))
 @opt.check
 raise "Unsatisfiable?!" unless @opt.satisfiable?
