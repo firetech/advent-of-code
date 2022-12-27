@@ -53,11 +53,11 @@ seen = Hash.new
 i = 0
 while i < GENERATIONS.max
   next_pots = 0
-  (max_pot - min_pot + 1).times do |i|
-    shift = i - 2
+  (max_pot - min_pot + 1).times do |p|
+    shift = p - 2
     if @transforms[(pots & (mask << shift)) >> shift]
-      next_pots |= 1 << i
-      if pots >> i == 0
+      next_pots |= 1 << p
+      if pots >> p == 0
         max_pot += 1
       end
     end
