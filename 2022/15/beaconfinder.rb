@@ -1,5 +1,13 @@
-file = ARGV[0] || 'input'; @p1_y = ARGV[1] || 2000000; @p2_max = ARGV[2] || 4000000
+file = ARGV[0] || 'input'
+@p1_y = (ARGV[1] || 2000000).to_i;
+@p2_max = (ARGV[2] || 4000000).to_i
+
 #file = 'example1'; @p1_y = 10; @p2_max = 20
+#file = 'evil_example'; @p1_y = 2; @p2_max = 4
+
+def dist((x1, y1), (x2, y2))
+  return (x1 - x2).abs + (y1 - y2).abs
+end
 
 class Sensor
   attr_reader :x, :y, :beacon_x, :beacon_y, :min_range
@@ -13,15 +21,36 @@ class Sensor
     else
       raise "Malformed line: '#{line}'"
     end
-    @min_range = (@x - @beacon_x).abs + (@y - @beacon_y).abs
+    @min_range = dist([@x, @y], [@beacon_x, @beacon_y])
   end
 
-  def in_range_of(x, y)
-    (@x - x).abs + (@y - y).abs <= @min_range
+  def in_range_of?(point)
+    return dist([@x, @y], point) <= @min_range
+  end
+
+  def borders
+    if @borders.nil?
+      @borders = [
+        [@x - @min_range, @y, @x, @y - @min_range],
+        [@x - @min_range, @y, @x, @y + @min_range],
+        [@x, @y - @min_range, @x + @min_range, @y],
+        [@x, @y + @min_range, @x + @min_range, @y]
+      ].map do |x1, y1, x2, y2|
+        # y = mx + c
+        m = y2 <=> y1
+        c = y1 - m * x1
+        # x1 < x2, always, so x1..x2 is the range for x
+        [m, c, x1, x2]
+      end
+    end
+    return @borders
   end
 end
 
+t1 = Time.now
 @sensors = File.read(file).rstrip.split("\n").map { |line| Sensor.new(line) }
+
+t2 = Time.now
 
 # Part 1
 beacons_at_y = @sensors.select { |s| s.beacon_y == @p1_y }.map(&:beacon_x).uniq
@@ -29,97 +58,81 @@ beacons_at_y = @sensors.select { |s| s.beacon_y == @p1_y }.map(&:beacon_x).uniq
 x_ranges = []
 @sensors.each do |s|
   dx_at_y = s.min_range - (@p1_y - s.y).abs
-  x_ranges << ((s.x - dx_at_y)..(s.x + dx_at_y)) if dx_at_y >= 0
+  x_ranges << [s.x - dx_at_y, s.x + dx_at_y] if dx_at_y >= 0
 end
 # Merge ranges
 merged_ranges = []
-x_ranges.sort_by(&:min).each do |r|
-  if not merged_ranges.empty? and merged_ranges.last.max >= r.min
-    new_max = [merged_ranges.last.max, r.max].max
-    merged_ranges[-1] = (merged_ranges.last.min..new_max)
-  else
-    merged_ranges << r
+x_ranges.sort_by(&:first).each do |r|
+  if not merged_ranges.empty?
+    last = merged_ranges.last
+    if last[1] >= r[0]
+      last[1] = r[1] if last[1] < r[1]
+      next
+    end
   end
+  merged_ranges << r
 end
-in_range_x = merged_ranges.map(&:size).sum - beacons_at_y.count
+in_range_x = merged_ranges.map { |r| r[1] - r[0] + 1 }.sum - beacons_at_y.count
 puts "At y=#{@p1_y}, #{in_range_x} positions can't contain a beacon"
 
+t3 = Time.now
 
 # Part 2
-require 'set'
+borders = @sensors.inject([]) { |all, s| all.push(*s.borders) }
 
-@pos_range = 0..@p2_max
-
-# Since we want to find a _single_ point not in range of any sensor, it must
-# be _just_ outside the range of all nearby sensors.
-# First find all pairs of sensors that have an uncovered line of with 1 between
-# them.
-@pairs = @sensors.combination(2).select do |a, b|
-  ((a.x - b.x).abs + (a.y - b.y).abs) == (a.min_range + b.min_range + 2)
-end
-
-# Find mid-point and slope for each pair
-@diags = [[-1, -1], [-1, 1], [1, -1], [1, 1]]
-@pairs.map! do |pair|
-  # Find mid point
-  dist = pair.map(&:min_range).sum + 2.0
-  by_x = pair.sort_by(&:x)
-  x = (by_x.first.x + ((by_x.first.min_range + 2) / dist) *
-        (by_x.last.x - by_x.first.x)).floor
-  by_y = pair.sort_by(&:y)
-  y = (by_y.first.y + ((by_y.first.min_range + 2) / dist) *
-        (by_y.last.y - by_y.first.y)).floor
-  diags = @diags.select do |dx, dy|
-    px = x + dx
-    py = y + dy
-    @pos_range.include?(px) and @pos_range.include?(py) and
-      pair.none? { |s| s.in_range_of(px, py) }
-  end
-  raise 'Ehm?' if diags.length != 2 and diags.length != 1
-  pair.push(diags, x, y)
-end
-
-# Then, since we're working with Manhattan distance, to encircle a single,
-# uncovered point, we need four distinct sensors, so find all pairs of pairs
-# with four unique sensors between them, that give perpendicular lines.
-@groups = @pairs.combination(2).select do |(a, b, diags1), (c, d, diags2)|
-  a != c and b != c and a != d and b != d and (diags1 & diags2).empty?
-end
-
-# Lastly, follow the diagonals until we find a common point.
-# This can probably be done faster with pure math, but I can't be bothered...
-def key(x, y)
-  return y << 22 | x
-end
-def find_frequency
-  walks = @groups.map do |pairs|
-    seen = Set[]
-    group_walks = pairs.flat_map do |_, _, diags, x, y|
-      start = key(x, y)
-      # Lucky?
-      return x, y if seen.include?(start)
-      seen << start
-      diags.map { |dx, dy| [x + dx, y + dy, dx, dy] }
-    end
-    [group_walks, seen]
-  end
-  until walks.empty?
-    walks.reject! do |group_walks, seen|
-      group_walks.select! do |w|
-        w[0] += w[2] # x += dx
-        w[1] += w[3] # y += dy
-        if @pos_range.include?(w[0]) and @pos_range.include?(w[1])
-          point = key(w[0], w[1])
-          return w[0], w[1] if seen.include?(point)
-          seen << point
-          true # keep walking
-        else
-          false # discard walk
-        end
-      end
-      group_walks.empty?
+def find_intersection(l1, l2)
+  if l1[0] != l2[0] # Lines can intersect at all
+    m1, c1, x_min1, x_max1 = l1
+    m2, c2, x_min2, x_max2 = l2
+    x = (c2 - c1)/(m1 - m2).to_f
+    if x.between?(x_min1, x_max1) and x.between?(x_min2, x_max2)
+      x = x.to_i if (x - x.floor).zero?
+      y = (m1 * c2 - m2 * c1)/(m1 - m2).to_f
+      y = y.to_i if (y - y.floor).zero?
+      return [x, y]
     end
   end
+  return nil
 end
-x, y = find_frequency
-puts "Beacon at x=#{x}, y=#{y}. Tuning frequency: #{x * 4000000 + y}"
+
+intersections = []
+borders.combination(2).each do |l1, l2|
+  i = find_intersection(l1, l2)
+  intersections << i unless i.nil?
+end
+pairs = intersections.uniq.combination(2).select { |a, b| dist(a, b) == 2 }
+diamonds = pairs.combination(2).select do |pair1, pair2|
+  pair1.product(pair2).all? do |a, b|
+    # Allow for half-point intersections, example (file evil_example):
+    #  c|ac|ac|a |a
+    # --+--+--+--+--
+    # bc| c|a |a |a
+    # --+--+--+--+--
+    # bc|b |XX|a |ad
+    # --+--+--+--+--
+    # b |b |b | d|ad
+    # --+--+--+--+--
+    # b |b |bd|bd| d
+    # (These have manhattan distance 4 instead of 2)
+    a_int = a.all?(&:integer?)
+    b_int = b.all?(&:integer?)
+    a_int == b_int and dist(a, b) == (a_int ? 2 : 4)
+  end
+end
+diamonds.map { |d| d.flatten(1).sort }.uniq.each do |d|
+  x = (d.map(&:first).min + 1).round
+  next unless x.between?(0, @p2_max)
+  y = (d.map(&:last).min + 1).round
+  next unless y.between?(0, @p2_max)
+  next if @sensors.any? { |s| s.in_range_of?([x, y]) }
+  puts "Beacon at x=#{x}, y=#{y}. Tuning frequency: #{x * 4000000 + y}"
+end
+
+t4 = Time.now
+puts
+puts 'Total: %f, parse: %f, part 1: %f, part 2: %f' % [
+  t4 - t1,
+  t2 - t1,
+  t3 - t2,
+  t4 - t3
+]
