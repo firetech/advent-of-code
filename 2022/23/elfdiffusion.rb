@@ -72,11 +72,15 @@ begin
           else
             # Move has been proposed by someone else
             if other != true
-              # Move original proposer back
-              new_elves[other] = true
+              begin
+                # Move original proposer(s) back
+                new_other = new_elves[other]
+                new_elves[other] = true
+                moved -= 1
+                other = new_other
+              end while not other.nil? and other != true
               new_elves[new_pos] = true
               blocked_proposals << new_pos
-              moved -= 1
             end
             # Stay put
             new_elves[pos] = true
