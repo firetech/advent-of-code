@@ -54,21 +54,21 @@ def print_map
     @min_x.upto(@max_x) do |x|
       room = @map[[x, y]]
       west_edge = [
-        '#',
-        (room.has_door?('W') ? ' ' : '#'),
-        '#'
+        "\u2588",
+        (room.has_door?('W') ? '|' : "\u2588"),
+        "\u2588"
       ]
       if line1.empty?
         line1, line2, line3 = west_edge
       elsif line2[-1,1] != west_edge[1]
         raise "Border mismatch on y=#{x} between x=#{x-1} and x=#{x}"
       end
-      line1 << (room.has_door?('N') ? ' ' : '#')
-      line2 << ((x == 0 and y == 0) ? 'X' : '.')
-      line3 << (room.has_door?('S') ? ' ' : '#')
-      line1 << '#'
-      line2 << (room.has_door?('E') ? ' ' : '#')
-      line3 << '#'
+      line1 << (room.has_door?('N') ? '-' : "\u2588")
+      line2 << ((x == 0 and y == 0) ? 'X' : ' ')
+      line3 << (room.has_door?('S') ? '-' : "\u2588")
+      line1 << "\u2588"
+      line2 << (room.has_door?('E') ? '|' : "\u2588")
+      line3 << "\u2588"
     end
     if last_line.nil?
       puts line1

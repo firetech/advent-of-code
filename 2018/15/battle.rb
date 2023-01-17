@@ -38,7 +38,7 @@ class Entity
         if @x == px and @y == py
           # In reach of target, don't move
           return true
-        elsif (map[py] or [])[px] == '.' and
+        elsif (map[py] or [])[px] == ' ' and
             entities.none? { |oe| oe.x == px and oe.y == py }
           reachable << [px, py]
         end
@@ -64,7 +64,7 @@ class Entity
         if targets.include?(p)
           found_paths << [ p_path.length, p_path.first ]
         else
-          if (map[py] or [])[px] == '.' and
+          if (map[py] or [])[px] == ' ' and
               entities.none? { |oe| oe.x == px and oe.y == py }
             queue << [px, py, p_path]
           end
@@ -117,9 +117,13 @@ end
     case c
     when 'E', 'G'
       @entities << Entity.new(x, y, c)
-      '.'
+      ' '
+    when '#'
+      "\u2588"
+    when '.'
+      ' '
     else
-      c
+      raise "Unexpected character: '#{c}'"
     end
   end
 end

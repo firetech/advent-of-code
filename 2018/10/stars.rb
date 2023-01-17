@@ -40,7 +40,7 @@ x_max = xs.max
 ys.min.upto(ys.max) do |y|
   x_min.upto(xs.max) do |x|
     if pos.include?([x, y])
-      print '#'
+      print "\u2588"
     else
       print ' '
     end
