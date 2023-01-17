@@ -1,6 +1,6 @@
 require_relative '../../lib/aoc_api'
 
-@input = (ARGV[0] || File.read(AOC.input_file()).strip).to_i
+@input = (ARGV[0] || AOC.input()).to_i
 #@input = 9
 #@input = 2018
 #@input = 51589

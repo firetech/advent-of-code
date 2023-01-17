@@ -1,6 +1,6 @@
 require_relative '../../lib/aoc_api'
 
-input = ARGV[0] || File.read(AOC.input_file()).strip
+input = ARGV[0] || AOC.input()
 #input = 'flqrgnkx'
 
 # Part 1

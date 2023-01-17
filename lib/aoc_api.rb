@@ -72,13 +72,14 @@ module AOC
   end
 
 
-  def self.input_file(day = nil, year = Time.now.year)
+  def self.input_file(day = nil, year = nil)
     base = File.expand_path('..', __dir__)
     inputs = File.join(base, '.inputs')
     if not File.directory?(inputs)
       require 'fileutils'
       FileUtils.mkdir_p(inputs)
     end
+    year = Time.now.year if year.nil?
     if day.nil?
       pwd = File.dirname(File.expand_path($PROGRAM_NAME))
       year, day, *extra = pwd.sub(/\A#{Regexp.escape(base)}\//, '').split('/')
@@ -94,5 +95,10 @@ module AOC
       fetch("/#{year}/day/#{req_day}/input", file)
     end
     return file
+  end
+
+
+  def self.input(day = nil, year = nil)
+    return File.read(input_file(day, year)).rstrip
   end
 end
