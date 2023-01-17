@@ -1,6 +1,7 @@
-input = File.read('input').split(',').map(&:to_i)
-
+require_relative '../../lib/aoc_api'
 require_relative '../lib/intcode'
+
+input = File.read(ARGV[0] || AOC.input_file()).split(',').map(&:to_i)
 
 # part 1
 i = Intcode.new(input)

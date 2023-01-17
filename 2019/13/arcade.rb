@@ -1,9 +1,37 @@
-input = File.read('input').strip
-
 require 'set'
+require 'optparse'
+require_relative '../../lib/aoc_api'
 require_relative '../lib/intcode'
 
+def usage(spacer = true)
+  puts if spacer
+  STDERR.puts @opts
+  exit false
+end
+
 @graphics = false
+@opts = OptionParser.new do |opts|
+  opts.banner = "Usage: #{opts.program_name} [options] [filename]"
+
+  opts.on('-g',
+          '--graphics',
+          'Enable graphics') do
+    @graphics = true
+  end
+
+  opts.on('-h', '--help', 'Print this help and exit.') do
+    usage(false)
+  end
+end
+
+begin
+  @opts.parse!(ARGV)
+rescue => e
+  STDERR.puts e
+  usage
+end
+
+input = File.read(ARGV[0] || AOC.input_file()).strip
 
 @game = Intcode.new(input, false)
 @grid = []
@@ -11,14 +39,14 @@ require_relative '../lib/intcode'
 @paddle = nil
 @ball = nil
 
-def handle_output
+def handle_output(allow_graphics = false)
   while @game.has_output?
     x = @game.output
     y = @game.output
 
     if x == -1 and y == 0
       @score = @game.output
-      if @graphics
+      if allow_graphics and @graphics
         Curses.setpos(0, 0)
         Curses.addstr("Score: #{@score}")
         Curses.refresh
@@ -43,7 +71,7 @@ def handle_output
       end
       @grid[y] ||= []
       @grid[y][x] = tile
-      if @graphics
+      if allow_graphics and @graphics
         Curses.setpos(y + 1, x)
         Curses.addstr(tile_ch)
         Curses.refresh
@@ -59,12 +87,12 @@ handle_output
 puts "#{@blocks.count} blocks found on screen"
 
 # part 2
-if ARGV.include?('--graphics')
+if @graphics
   begin
     require 'curses'
-    @graphics = true
   rescue LoadError
     puts 'Failed to load Curses, running without graphics'
+    @graphics = false
   end
 end
 
@@ -77,7 +105,7 @@ begin
   @game[0] = 2
   @score = 0
   @game.run do
-    handle_output
+    handle_output(true)
     if @graphics
       sleep 0.01
     end
@@ -86,7 +114,7 @@ begin
     @ball <=> @paddle
   end
 
-  handle_output
+  handle_output(true)
 ensure
   Curses.close_screen if @graphics
 end

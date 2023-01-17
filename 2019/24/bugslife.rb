@@ -1,4 +1,8 @@
-input = File.read('input').strip; @minutes = 200
+require_relative '../../lib/aoc_api'
+
+input = File.read(ARGV[0] || AOC.input_file()).strip
+@minutes = (ARGV[1] || 200).to_i
+
 #input = File.read('example').strip; @minutes = 10
 
 require 'set'

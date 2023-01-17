@@ -1,13 +1,14 @@
-input = 240920..789857
+require_relative '../../lib/aoc_api'
 
-PART = 2
+min, max = File.read(ARGV[0] || AOC.input_file()).strip.split('-').map(&:to_i)
+range = min..max
 
-def pw_ok?(pw)
+def pw_ok?(pw, check_pair = false)
   pw_s = pw.to_s
   if not pw_s =~ /(.)\1/
     return false
   end
-  if PART == 2
+  if check_pair
     # This can be done cleaner with chunk or slice_when, but that is ~2-3 times slower
     has_no_pair = true
     pw_s.scan(/((.)\2+)/) do |match|
@@ -28,6 +29,10 @@ def pw_ok?(pw)
   return true
 end
 
-good_pw = input.select { |pw| pw_ok?(pw) }
-
+# Part 1
+good_pw = range.select { |pw| pw_ok?(pw) }
 puts "#{good_pw.length} good passwords found"
+
+# Part 2
+good_pw2 = range.select { |pw| pw_ok?(pw, true) }
+puts "#{good_pw2.length} good passwords with actual pairs found"

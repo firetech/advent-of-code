@@ -1,4 +1,6 @@
-input = File.read('input').strip
+require_relative '../../lib/aoc_api'
+
+input = File.read(ARGV[0] || AOC.input_file()).strip
 #input = '80871224585914546619083218645595'
 #input = '19617804207202209144916044189917'
 #input = '69317163492948606335995924319873'

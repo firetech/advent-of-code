@@ -1,4 +1,6 @@
-input = File.read('input')
+require_relative '../../lib/aoc_api'
+
+input = File.read(ARGV[0] || AOC.input_file())
 
 @steps = []
 input.strip.split("\n").each do |line|

@@ -1,6 +1,7 @@
-input = File.read('input')
-
+require_relative '../../lib/aoc_api'
 require_relative '../lib/intcode'
+
+input = File.read(ARGV[0] || AOC.input_file())
 
 class Robot
 

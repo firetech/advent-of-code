@@ -1,4 +1,6 @@
-input = File.read('input').strip.split("\n")
+require_relative '../../lib/aoc_api'
+
+input = File.read(ARGV[0] || AOC.input_file()).strip.split("\n")
 #input = File.read('example').strip.split("\n")
 #input = File.read('example2').strip.split("\n")
 

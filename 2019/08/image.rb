@@ -1,4 +1,6 @@
-input = File.read('input').strip.chars.map(&:to_i)
+require_relative '../../lib/aoc_api'
+
+input = File.read(ARGV[0] || AOC.input_file()).strip.chars.map(&:to_i)
 WIDTH = 25
 HEIGHT = 6
 
