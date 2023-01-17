@@ -1,8 +1,12 @@
-card = 7573546; door = 17786549
-#card = 5764801; door = 17807724
+require_relative '../../lib/aoc_api'
+
+file = ARGV[0] || AOC.input_file()
+#file = 'example1'
+
 BASE = 7
 MOD = 20201227
 
+card, door = File.read(file).rstrip.split("\n").map(&:to_i)
 card_val = 7
 door_val = 7
 loop_size = nil

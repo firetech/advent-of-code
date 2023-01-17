@@ -1,4 +1,7 @@
-input = '215694783'; part1_moves = 100
+require_relative '../../lib/aoc_api'
+
+input = ARGV[0] || File.read(AOC.input_file()).rstrip
+part1_moves = (ARGV[1] || 100).to_i
 #input = '389125467'; part1_moves = 10
 
 class Cup

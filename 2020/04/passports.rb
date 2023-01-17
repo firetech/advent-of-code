@@ -1,4 +1,6 @@
-input = File.read('input')
+require_relative '../../lib/aoc_api'
+
+input = File.read(ARGV[0] || AOC.input_file())
 #input = File.read('example1')
 
 input = input.strip.split("\n\n").map do |data|

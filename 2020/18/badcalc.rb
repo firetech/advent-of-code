@@ -1,11 +1,13 @@
-file = 'input'
+require_relative '../../lib/aoc_api'
+
+file = ARGV[0] || AOC.input_file()
 #file = 'example1'
 
 input = File.read(file).strip.split("\n")
 
 def parse(line, precedence)
   while line.include?('(')
-    line = line.gsub(/\(([^()]+)\)/) { |match| parse(Regexp.last_match(1), precedence) }
+    line = line.gsub(/\(([^()]+)\)/) { parse(Regexp.last_match(1), precedence) }
   end
   precedence.each do |ops|
     while line =~ / [#{ops}] /

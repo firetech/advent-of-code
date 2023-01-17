@@ -1,4 +1,8 @@
-input = File.read('input').strip.split("\n").map(&:to_i); preamble_size = 25
+require_relative '../../lib/aoc_api'
+
+input = File.read(ARGV[0] || AOC.input_file()).strip.split("\n").map(&:to_i)
+preamble_size = (ARGV[1] || 25).to_i
+
 #input = File.read('example1').strip.split("\n").map(&:to_i); preamble_size = 5
 
 #part 1

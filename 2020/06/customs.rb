@@ -1,6 +1,7 @@
 require 'set'
+require_relative '../../lib/aoc_api'
 
-input = File.read('input').strip
+input = File.read(ARGV[0] || AOC.input_file()).strip
 #input = File.read('example1').strip
 
 groups = input.split("\n\n").map { |group| group.split("\n").map(&:chars) }

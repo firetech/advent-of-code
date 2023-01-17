@@ -1,4 +1,8 @@
-file = 'input'; part2_days = 100
+require_relative '../../lib/aoc_api'
+
+file = ARGV[0] || AOC.input_file()
+part2_days = (ARGV[1] || 100).to_i
+
 #file = 'example1'; part2_days = 10
 
 input = File.read(file).strip.split("\n")
