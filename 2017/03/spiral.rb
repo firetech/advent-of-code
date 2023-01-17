@@ -1,4 +1,6 @@
-input = 312051
+require_relative '../../lib/aoc_api'
+
+input = (ARGV[0] || File.read(AOC.input_file()).strip).to_i
 #input = 1
 #input = 12
 #input = 23

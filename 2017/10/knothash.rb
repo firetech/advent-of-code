@@ -1,4 +1,8 @@
-input = '106,16,254,226,55,2,1,166,177,247,93,0,255,228,60,36'; @max = 255
+require_relative '../../lib/aoc_api'
+
+input = File.read(ARGV[0] || AOC.input_file()).strip
+@max = 255
+
 #input = '3,4,1,5'; @max = 4
 #input = ''; @max = 255
 #input = 'AoC 2017'; @max = 255

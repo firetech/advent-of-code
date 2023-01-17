@@ -1,5 +1,20 @@
-val_A = 703; val_B = 516
-#val_A = 65; val_B = 8921
+require_relative '../../lib/aoc_api'
+
+file = ARGV[0] || AOC.input_file()
+#file = 'example1'
+
+val_A = nil
+val_B = nil
+File.read(file).rstrip.split("\n").each do |line|
+  case line
+  when /\AGenerator A starts with (\d+)\z/
+   val_A = Regexp.last_match(1).to_i
+  when /\AGenerator B starts with (\d+)\z/
+   val_B = Regexp.last_match(1).to_i
+  else
+    raise "Malformed line: '#{line}'"
+  end
+end
 
 fac_A = 16807; fac_B = 48271
 mod = 2147483647

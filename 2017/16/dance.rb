@@ -1,4 +1,9 @@
-file = 'input'; last_program = 'p'; part2_rounds = 1_000_000_000
+require_relative '../../lib/aoc_api'
+
+file = ARGV[0] || AOC.input_file()
+last_program = ARGV[1] || 'p'
+part2_rounds = (ARGV[2] || 1_000_000_000).to_i
+
 #file = 'example1'; last_program = 'e'; part2_rounds = 2
 
 programs = ('a'..last_program).to_a

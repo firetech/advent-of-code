@@ -1,4 +1,8 @@
-file = 'input'; iters = [5, 18]
+require_relative '../../lib/aoc_api'
+
+file = ARGV[0] || AOC.input_file()
+iters = ARGV.length > 1 ? ARGV[1..-1].map(&:to_i) : [5, 18]
+
 #file = 'example1'; iters = [2]
 
 def rotate_tile(tile, rot, flip)

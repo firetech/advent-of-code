@@ -1,4 +1,6 @@
-input = File.read('input').strip
+require_relative '../../lib/aoc_api'
+
+input = File.read(ARGV[0] || AOC.input_file()).strip
 #input = '0 2 7 0'
 
 banks = input.split(/\s+/).map(&:to_i)

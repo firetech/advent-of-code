@@ -1,4 +1,6 @@
-input = File.read('input').strip
+require_relative '../../lib/aoc_api'
+
+input = File.read(ARGV[0] || AOC.input_file()).strip
 #input = 'ne,ne,ne'
 #input = 'se,sw,se,sw,sw'
 

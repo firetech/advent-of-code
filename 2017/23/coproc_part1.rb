@@ -1,4 +1,6 @@
-file = 'input'
+require_relative '../../lib/aoc_api'
+
+file = ARGV[0] || AOC.input_file()
 
 # Input parsing
 ARG_REG = /[a-h]/

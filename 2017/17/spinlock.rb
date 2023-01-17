@@ -1,4 +1,8 @@
-input = 335; part2_max = 50_000_000
+require_relative '../../lib/aoc_api'
+
+input = (ARGV[0] || File.read(AOC.input_file()).strip).to_i
+part2_max = (ARGV[1] || 50_000_000).to_i
+
 #input = 3; part2_max = 9
 
 # Part 1

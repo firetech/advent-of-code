@@ -1,4 +1,6 @@
-file = 'input'
+require_relative '../../lib/aoc_api'
+
+file = ARGV[0] || AOC.input_file()
 #file = 'example1'
 
 # My initial, more naïve solution. It works, but is about 30x slower than the
