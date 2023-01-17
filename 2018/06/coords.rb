@@ -1,6 +1,9 @@
 require 'set'
+require_relative '../../lib/aoc_api'
 
-file = 'input'; part2_dist = 10_000
+file = ARGV[0] || AOC.input_file()
+part2_dist = (ARGV[1] || 10_000).to_i
+
 #file = 'example1'; part2_dist = 32
 
 @coords = File.read(file).strip.split("\n").map do |line|

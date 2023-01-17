@@ -1,7 +1,30 @@
-input = [486, [70833, 70833 * 100]]
+require_relative '../../lib/aoc_api'
+
+input = nil
 #input = [9, 25]
 #input = [10, 1618]
 #input = [30, 5807]
+
+if input.nil?
+  if ARGV.length == 0
+    File.read(AOC.input_file()).rstrip.split("\n").each do |line|
+      case line
+      when /\A(\d+) players; last marble is worth (\d+) points\z/
+        input = [
+          Regexp.last_match(1).to_i,
+          Regexp.last_match(2).to_i,
+          Regexp.last_match(2).to_i * 100
+        ]
+      else
+        raise "Malformed line: '#{line}'"
+      end
+    end
+  elsif ARGV.length >= 2
+    input = ARGV.map(&:to_i)
+  else
+    raise ArgumentError, "Expected 0 or >=2 arguments, got 1"
+  end
+end
 
 class Marble
   attr_reader :value, :next, :prev
@@ -29,8 +52,7 @@ class Marble
   attr_writer :next, :prev
 end
 
-@players, @last_marble = input
-@last_marble = [ @last_marble ] unless  @last_marble.is_a?(Array)
+@players, *@last_marble = input
 
 current = Marble.new(0)
 player = 0

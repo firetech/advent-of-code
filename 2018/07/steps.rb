@@ -1,6 +1,12 @@
 require 'set'
+require_relative '../../lib/aoc_api'
 
-file = 'input'; part2 = [5, 60]
+file = ARGV[0] || AOC.input_file()
+part2 = [
+  (ARGV[1] || 5).to_i,
+  (ARGV[2] || 60).to_i
+]
+
 #file = 'example1'; part2 = [2, 0]
 
 @prereqs = {}

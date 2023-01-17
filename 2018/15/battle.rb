@@ -1,6 +1,7 @@
 require 'set'
+require_relative '../../lib/aoc_api'
 
-file = 'input'
+file = ARGV[0] || AOC.input_file()
 #file = 'move_example1'
 #file = 'move_example2'
 #file = 'move_example3'

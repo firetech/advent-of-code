@@ -1,4 +1,6 @@
-file = 'input'
+require_relative '../../lib/aoc_api'
+
+file = ARGV[0] || AOC.input_file()
 #file = 'example1'
 
 CHECKS = [10, 1000000000] # Part 1, Part 2

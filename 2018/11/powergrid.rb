@@ -1,4 +1,6 @@
-@serial = 2568
+require_relative '../../lib/aoc_api'
+
+@serial = (ARGV[0] || File.read(AOC.input_file()).strip).to_i
 #@serial = 8
 #@serial = 18
 #@serial = 42
