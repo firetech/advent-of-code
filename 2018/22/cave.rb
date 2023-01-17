@@ -1,9 +1,22 @@
-@depth = 11109; @target_x = 9; @target_y = 731
-#@depth = 510; @target_x = 10; @target_y = 10
+require_relative '../../lib/aoc_api'
+
+file = ARGV[0] || AOC.input_file()
+#file = 'example1'
+
+File.read(file).rstrip.split("\n").each do |line|
+  case line
+  when /\Adepth: (\d+)\z/
+    @depth = Regexp.last_match(1).to_i
+  when /\Atarget: (\d+),(\d+)\z/
+    @target_x = Regexp.last_match(1).to_i
+    @target_y = Regexp.last_match(2).to_i
+  else
+    raise "Malformed line: '#{line}'"
+  end
+end
 
 X_BITS = 16
 X_MASK = (1 << X_BITS) - 1
-X_RANGE = 0..X_MASK
 
 def to_pos(x, y)
   (y << X_BITS) | x
@@ -65,7 +78,6 @@ puts "Total risk level: #{sum}"
 
 
 # Part 2
-require 'set'
 require_relative '../../lib/priority_queue'
 
 NEITHER = 0
@@ -73,9 +85,9 @@ CLIMBING = 1
 TORCH = 2
 
 TOOLS = {
-  0 => Set[CLIMBING, TORCH], # Rocky
-  1 => Set[CLIMBING, NEITHER], # Wet
-  2 => Set[TORCH, NEITHER], # Narrow
+  0 => [CLIMBING, TORCH], # Rocky
+  1 => [CLIMBING, NEITHER], # Wet
+  2 => [TORCH, NEITHER], # Narrow
 }
 
 CHANGE_TIME = 7
@@ -108,33 +120,32 @@ until queue.empty?
   this_time = time[state]
   [[-1, 0], [1, 0], [0, -1], [0, 1]].each do |delta_x, delta_y|
     nx = x + delta_x
-    next unless X_RANGE.include?(nx)  # Upper limit to avoid overflow in bitmask
+    next unless nx.between?(0, X_MASK)  # Upper limit to avoid overflow in bitmask
     ny = y + delta_y
     next if ny < 0
 
     # Check tool
     nrisk = get_risk(nx, ny)
     ntool = tool
-    move_time = 1
-    if nrisk != this_risk
-      ntool = (TOOLS[nrisk] & TOOLS[this_risk]).first  # Should only have 1 item
+    (TOOLS[nrisk] & TOOLS[this_risk]).each do |ntool|
+      move_time = 1
       if ntool != tool
         move_time += CHANGE_TIME
       end
-    end
 
-    # Calculate move
-    nstate = to_state(nx, ny, ntool)
-    ntime = this_time + move_time
-    if ntime < time[nstate]
-      time[nstate] = ntime
+      # Calculate move
+      nstate = to_state(nx, ny, ntool)
+      ntime = this_time + move_time
+      if ntime < time[nstate]
+        time[nstate] = ntime
 
-      # A* time! :)
-      # Absolutely minimum possible time to get to target state
-      heuristic = (@target_x - nx).abs +
-                    (@target_y - ny).abs
-                    (ntool == TORCH ? 0 : CHANGE_TIME)
-      queue.push(nstate, ntime + heuristic)
+        # A* time! :)
+        # Absolutely minimum possible time to get to target state
+        heuristic = (@target_x - nx).abs +
+                      (@target_y - ny).abs
+                      (ntool == TORCH ? 0 : CHANGE_TIME)
+        queue.push(nstate, ntime + heuristic)
+      end
     end
   end
 end
