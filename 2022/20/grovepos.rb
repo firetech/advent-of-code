@@ -1,4 +1,6 @@
-file = ARGV[0] || 'input'
+require_relative '../../lib/aoc_api'
+
+file = ARGV[0] || AOC.input_file()
 #file = 'example1'
 
 @numbers = File.read(file).rstrip.split("\n").map(&:to_i)

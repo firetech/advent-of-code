@@ -1,6 +1,7 @@
 require 'set'
+require_relative '../../lib/aoc_api'
 
-file = ARGV[0] || 'input'
+file = ARGV[0] || AOC.input_file()
 #file = 'example1'
 
 @raw_voxels = []

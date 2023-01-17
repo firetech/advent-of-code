@@ -1,4 +1,6 @@
-file = ARGV[0] || 'input'
+require_relative '../../lib/aoc_api'
+
+file = ARGV[0] || AOC.input_file()
 @p1_y = (ARGV[1] || 2000000).to_i;
 @p2_max = (ARGV[2] || 4000000).to_i
 

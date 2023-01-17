@@ -1,4 +1,6 @@
-file = ARGV[0] || 'input'
+require_relative '../../lib/aoc_api'
+
+file = ARGV[0] || AOC.input_file()
 #file = 'example1'
 
 FACING_DELTA = [
@@ -57,7 +59,7 @@ end
 puts "Final password: #{1000*(y+1) + 4*(x+1) + facing}"
 
 # Part 2
-raise 'Part 2 is hardcoded, only works for my input!' if file != 'input'
+raise 'Part 2 is hardcoded for the shape of real inputs' if file == 'example1'
 facing = 0
 x = @map.first.index('.')
 y = 0

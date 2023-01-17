@@ -1,6 +1,7 @@
 require 'set'
+require_relative '../../lib/aoc_api'
 
-file = 'input'
+file = ARGV[0] || AOC.input_file()
 #file = 'example1'
 
 numbers_str, *board_strs = File.read(file).strip.split("\n\n")

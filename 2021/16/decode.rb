@@ -1,4 +1,6 @@
-input = File.read('input').strip
+require_relative '../../lib/aoc_api'
+
+input = File.read(ARGV[0] || AOC.input_file()).strip
 #input = 'D2FE28'
 #input = '38006F45291200'
 #input = 'EE00D40C823060'

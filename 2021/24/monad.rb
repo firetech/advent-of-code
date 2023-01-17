@@ -1,4 +1,6 @@
-file = 'input'
+require_relative '../../lib/aoc_api'
+
+file = ARGV[0] || AOC.input_file()
 
 @program = File.read(file).strip.split("\n").map do |line|
   case line
