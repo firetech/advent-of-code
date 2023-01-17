@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
-require 'net/http'
 require 'optparse'
+require_relative 'lib/aoc_api'
 
 $year = Time.now.year
 today = Time.now.strftime('%Y/%d')
@@ -25,7 +25,7 @@ $opts = OptionParser.new do |opts|
       dir = Dir.pwd.sub(/\A#{Regexp.escape(__dir__)}\//, '')
       year, day, *extra = dir.split('/')
       unless year =~ /\A\d{4}\z/ and day =~ /\A\d{1,2}\z/ and extra.empty?
-        STDERR.puts "Did you run this in a day folder (i.e. #{today})?"
+        STDERR.puts "Did you run this in a puzzle folder (i.e. #{today})?"
         exit 1
       end
     end
@@ -68,60 +68,4 @@ rescue => e
   usage
 end
 
-def get_session(force_prompt = false)
-  session_file = File.join(__dir__, '.session')
-  if File.exist?(session_file) and not force_prompt
-    session = File.read(session_file).strip
-  else
-    print 'Please supply your session ID: '
-    session = gets.strip
-    File.open(session_file, 'w') do |f|
-      f.puts session
-    end
-  end
-  return session
-end
-
-$session = get_session
-options = {
-  open_timeout: 2,
-  read_timeout: 10,
-  ssl_timeout: 2,
-  use_ssl: true
-}
-Net::HTTP.start('adventofcode.com', 443, nil, options) do |http|
-  $requests.each do |request_uri, file|
-    if file == '-'
-      file = :STDOUT
-    end
-    STDERR.puts "Fetching #{request_uri} to #{file}..."
-    req = Net::HTTP::Get.new(request_uri)
-    req['User-Agent'] = 'fetch.rb, ' \
-                        'from https://github.com/firetech/advent-of-code, ' \
-                        'by aoc(at)[github_username](dot)nu'
-    begin
-      req['cookie'] = "session=#{$session}"
-      do_retry = false
-      http.request(req) do |response|
-        if response.is_a?(Net::HTTPSuccess)
-          if file == :STDOUT
-            puts response.body
-          else
-            File.open(file, 'w') do |f|
-              f.puts response.body
-            end
-          end
-        elsif response.is_a?(Net::HTTPBadRequest)
-          puts response.body
-          puts
-          puts "Session seems to have expired."
-          $session = get_session(true)
-          do_retry = true
-        else
-          puts response.body
-          exit 1
-        end
-      end
-    end while do_retry
-  end
-end
+AOC.fetch($requests)
