@@ -1,6 +1,7 @@
+require_relative '../../lib/aoc_api'
 require_relative '../lib/assembunny'
 
-file = 'input'
+file = ARGV[0] || AOC.input_file()
 #file = 'example1'
 
 assembunny = AssemBunny.new(file)

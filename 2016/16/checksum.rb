@@ -1,4 +1,8 @@
-input = '10111100110001111'; lengths = [272, 35651584]
+require_relative '../../lib/aoc_api'
+
+input = ARGV[0] || AOC.input()
+lengths = ARGV.length > 1 ? ARGV[1..-1].map(&:to_i) : [272, 35651584]
+
 #input = '110010110100'; lengths = [12]
 #input = '10000'; lengths = [20]
 

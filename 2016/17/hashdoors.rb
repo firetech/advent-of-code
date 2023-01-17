@@ -1,6 +1,7 @@
 require 'digest/md5'
+require_relative '../../lib/aoc_api'
 
-input = 'bwnlcvfs'
+input = ARGV[0] || AOC.input()
 #input = 'ihgpwlah'
 #input = 'kglvqrro'
 #input = 'ulqzkmiv'
@@ -20,7 +21,7 @@ while not queue.empty?
   hash = Digest::MD5.hexdigest(input + path)
   DIRS.each_with_index do |(dir, (dx, dy)), i|
     px, py = x + dx, y + dy
-    if ('b'..'f').include?(hash[i]) and (0..3).include?(px) and (0..3).include?(py)
+    if hash[i].between?('b', 'f') and px.between?(0, 3) and py.between?(0, 3)
       if px == 3 and py == 3
         if min_path.nil?
           min_path = path + dir

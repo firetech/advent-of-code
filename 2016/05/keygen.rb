@@ -1,6 +1,7 @@
 require 'digest/md5'
+require_relative '../../lib/aoc_api'
 
-input = 'wtnhxymk'
+input = ARGV[0] || AOC.input()
 #input = 'abc'
 
 # Part 1

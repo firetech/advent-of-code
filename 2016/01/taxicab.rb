@@ -1,6 +1,7 @@
 require 'set'
+require_relative '../../lib/aoc_api'
 
-input = File.read('input').strip
+input = File.read(ARGV[0] || AOC.input_file()).strip
 #input = 'R5, L5, R5, R3'
 #input = 'R8, R4, R4, R8'
 

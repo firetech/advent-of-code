@@ -1,4 +1,8 @@
-@input = 1364; @target = [31, 39]
+require_relative '../../lib/aoc_api'
+
+@input = (ARGV[0] || AOC.input()).to_i
+@target = (ARGV[1] || '31,39').strip.split(',').map(&:to_i)
+
 #@input = 10; @target = [7, 4]
 
 def is_wall?(x, y)

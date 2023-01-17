@@ -1,6 +1,7 @@
 require 'digest/md5'
+require_relative '../../lib/aoc_api'
 
-@input = 'cuanljph'
+@input = ARGV[0] || AOC.input()
 #@input = 'abc'
 
 def find_64th

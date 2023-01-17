@@ -1,4 +1,8 @@
-file = 'input'; width = 50; height = 6
+require_relative '../../lib/aoc_api'
+
+file = ARGV[0] || AOC.input_file()
+width, height = (ARGV[1] || '50x6').split('x').map(&:to_i)
+
 #file = 'example1'; width = 7; height = 3
 
 grid = Array.new(height) { Array.new(width, ' ') }

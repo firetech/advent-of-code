@@ -1,6 +1,9 @@
 require 'set'
+require_relative '../../lib/aoc_api'
 
-file = 'input'; target = [17, 61]
+file = ARGV[0] || AOC.input_file()
+target = (ARGV[1] || '17,61').split(',').map(&:to_i)
+
 #file = 'example1'; target = [2, 3]
 
 @bots = {}

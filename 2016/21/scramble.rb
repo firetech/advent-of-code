@@ -1,4 +1,9 @@
-file = 'input'; part1_str = 'abcdefgh'; part2_str = 'fbgdceah'
+require_relative '../../lib/aoc_api'
+
+file = ARGV[0] || AOC.input_file()
+part1_str = ARGV[1] || 'abcdefgh';
+part2_str = ARGV[2] || 'fbgdceah'
+
 #file = 'example1'; part1_str = 'abcde'; part2_str = 'decab'
 
 input = File.read(file).strip.split("\n").map do |line|

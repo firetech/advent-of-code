@@ -1,6 +1,6 @@
-require_relative '../lib/assembunny'
+require_relative '../../lib/aoc_api'
 require_relative '../../lib/multicore'
-
+require_relative '../lib/assembunny'
 
 def check_clock(cpu, start_a)
   begin
@@ -27,7 +27,7 @@ end
 stop = nil
 begin
   input, output, stop = Multicore.run do |_, worker_out, a, nthreads|
-    assembunny = AssemBunny.new('input')
+    assembunny = AssemBunny.new(ARGV[0] || AOC.input_file())
     loop do
       break if check_clock(assembunny, a)
       a += nthreads

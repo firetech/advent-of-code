@@ -1,4 +1,6 @@
-input = 3014387
+require_relative '../../lib/aoc_api'
+
+input = (ARGV[0] || AOC.input()).to_i
 #input = 5
 
 # Part 1 (see end of https://www.youtube.com/watch?v=uCsD3ZGzMgE)

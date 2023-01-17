@@ -1,4 +1,8 @@
-file = 'input'; max = 4294967295
+require_relative '../../lib/aoc_api'
+
+file = ARGV[0] || AOC.input_file()
+max = (ARGV[1] || 4294967295).to_i
+
 #file = 'example1'; max = 9
 
 input = File.read(file).strip.split("\n").map { |line| line.split('-').map(&:to_i) }

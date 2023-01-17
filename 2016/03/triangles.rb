@@ -1,4 +1,6 @@
-input = File.read('input').strip.split("\n").map { |line| line.strip.split(/\s+/).map(&:to_i) }
+require_relative '../../lib/aoc_api'
+
+input = File.read(ARGV[0] || AOC.input_file()).strip.split("\n").map { |line| line.strip.split(/\s+/).map(&:to_i) }
 
 def possible_triangles(input)
   input.count do |lengths|

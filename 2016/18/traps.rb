@@ -1,4 +1,8 @@
-file = 'input'; rows = [40, 400000]
+require_relative '../../lib/aoc_api'
+
+file = ARGV[0] || AOC.input_file()
+rows = ARGV.length > 1 ? ARGV[1..-1].map(&:to_i) : [40, 400000]
+
 #file = 'example1'; rows = [3]
 #file = 'example2'; rows = [10]
 
