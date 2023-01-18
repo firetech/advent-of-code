@@ -1,4 +1,6 @@
-input = 33100000
+require_relative '../../lib/aoc_api'
+
+input = (ARGV[0] || AOC.input()).to_i
 
 LIMIT = 1000000
 

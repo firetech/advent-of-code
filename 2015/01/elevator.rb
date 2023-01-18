@@ -1,7 +1,6 @@
-require 'pp'
+require_relative '../../lib/aoc_api'
 
-input = File.read('input').strip
-puts input
+input = File.read(ARGV[0] || AOC.input_file()).strip
 
 #part 1
 

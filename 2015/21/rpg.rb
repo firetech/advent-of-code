@@ -1,4 +1,22 @@
-me = { hp: 100, d: 0, a: 0 }; boss = { hp: 104, d: 8, a: 1 }
+require_relative '../../lib/aoc_api'
+
+file = ARGV[0] || AOC.input_file()
+
+me = { hp: 100, d: 0, a: 0 }
+
+boss = {}
+File.read(file).rstrip.split("\n").each do |line|
+  case line
+  when /\AHit Points: (\d+)\z/
+    boss[:hp] = Regexp.last_match(1).to_i
+  when /\ADamage: (\d+)\z/
+    boss[:d] = Regexp.last_match(1).to_i
+  when /\AArmor: (\d+)\z/
+    boss[:a] = Regexp.last_match(1).to_i
+  else
+    raise "Malformed line: '#{line}'"
+  end
+end
 
 shop = {
   weapons: {

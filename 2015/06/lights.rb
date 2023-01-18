@@ -1,4 +1,6 @@
-input = File.read('input').strip.split("\n")
+require_relative '../../lib/aoc_api'
+
+input = File.read(ARGV[0] || AOC.input_file()).strip.split("\n")
 
 # Part 1
 lights1 = Array.new(1000000, false)

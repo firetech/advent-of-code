@@ -1,4 +1,8 @@
-input = File.read('input').split("\n").map { |box| box.split('x').map(&:to_i) }
+require_relative '../../lib/aoc_api'
+
+input = File.read(ARGV[0] || AOC.input_file()).split("\n").map do |box|
+  box.split('x').map(&:to_i)
+end
 
 # Part 1
 areas = input.map do |l, w, h|

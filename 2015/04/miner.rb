@@ -1,4 +1,6 @@
-input = 'ckczppom'
+require_relative '../../lib/aoc_api'
+
+input = ARGV[0] || AOC.input()
 
 #part 1
 require 'digest/md5'

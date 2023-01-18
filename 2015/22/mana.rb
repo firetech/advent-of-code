@@ -1,3 +1,20 @@
+require_relative '../../lib/aoc_api'
+
+file = ARGV[0] || AOC.input_file()
+@player_hp = (ARGV[1] || 50).to_i
+@player_mana = (ARGV[2] || 500).to_i
+
+File.read(file).rstrip.split("\n").each do |line|
+  case line
+  when /\AHit Points: (\d+)\z/
+    @boss_hp = Regexp.last_match(1).to_i
+  when /\ADamage: (\d+)\z/
+    @boss_atk = Regexp.last_match(1).to_i
+  else
+    raise "Malformed line: '#{line}'"
+  end
+end
+
 ACTIONS = {
   idle: { cost: 0 },
   missile: { cost: 53, atk: 4 },
@@ -6,10 +23,6 @@ ACTIONS = {
   poison: { cost: 173, atk: 3, counter: 6 },
   recharge: { cost: 229, mana: 101, counter: 5 },
 }
-BOSS_HP = 58
-BOSS_ATK = 9
-PLAYER_HP = 50
-PLAYER_MANA = 500
 
 def player_turn(boss_hp, player_hp, player_mana, player_effects, actions, queue)
 #pp turn: 'player', hp: player_hp, mana: player_mana, boss: boss_hp, prev: actions, effects: player_effects
@@ -66,7 +79,7 @@ def boss_turn(boss_hp, player_hp, player_mana, player_effects, actions, queue)
   if boss_hp <= 0
     return true
   end
-  attack = [1, (BOSS_ATK - defense)].max
+  attack = [1, (@boss_atk - defense)].max
 #pp boss_atk: attack
   if player_hp > attack
     queue << [ boss_hp, player_hp - attack, player_mana, player_effects, actions ]
@@ -76,7 +89,7 @@ end
 
 def mana_to_win(starting_effects = {})
   won = false
-  queue = [ [ BOSS_HP, PLAYER_HP, PLAYER_MANA, starting_effects, [] ] ]
+  queue = [ [ @boss_hp, @player_hp, @player_mana, starting_effects, [] ] ]
   while not won and not queue.empty?
     boss_hp, player_hp, player_mana, player_effects, actions = queue.shift
     won = player_turn(boss_hp, player_hp, player_mana, player_effects, actions, queue)

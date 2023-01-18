@@ -1,4 +1,6 @@
-input = 'hepxcrrq'
+require_relative '../../lib/aoc_api'
+
+input = ARGV[0] || AOC.input()
 #input = 'abcdefgh'
 #input = 'ghijklmn'
 

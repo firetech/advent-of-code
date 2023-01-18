@@ -1,7 +1,8 @@
-input = 1113122113
+require_relative '../../lib/aoc_api'
+
+input = (ARGV[0] || AOC.input()).to_i
 #input = 1
 
-#part 1
 def numberwang(input, iterations)
   x = input.to_s
   iterations.times do
@@ -12,6 +13,7 @@ def numberwang(input, iterations)
   return x
 end
 
+#part 1
 x = numberwang(input, 40)
 puts "Length after 40 iterations: #{x.length}"
 
