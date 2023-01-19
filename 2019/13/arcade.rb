@@ -1,6 +1,6 @@
 require 'set'
 require 'optparse'
-require_relative '../../lib/aoc_api'
+require_relative '../../lib/aoc'
 require_relative '../lib/intcode'
 
 def usage(spacer = true)

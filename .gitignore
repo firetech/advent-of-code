@@ -1,6 +1,6 @@
-# Session file for lib/aoc_api.rb
+# Session file for lib/aoc.rb
 /.session
-# Input file storage for lib/aoc_api.rb
+# Input file storage for lib/aoc.rb
 /.inputs
 # Input files in puzzle directories
 /*/*/input

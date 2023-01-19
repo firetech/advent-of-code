@@ -1,4 +1,4 @@
-require_relative '../../lib/aoc_api'
+require_relative '../../lib/aoc'
 
 @serial = (ARGV[0] || File.read(AOC.input_file()).strip).to_i
 #@serial = 8

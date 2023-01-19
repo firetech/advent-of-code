@@ -1,4 +1,4 @@
-require_relative '../../lib/aoc_api'
+require_relative '../../lib/aoc'
 
 input = ARGV[0] || AOC.input()
 lengths = ARGV.length > 1 ? ARGV[1..-1].map(&:to_i) : [272, 35651584]

@@ -1,4 +1,4 @@
-require_relative '../../lib/aoc_api'
+require_relative '../../lib/aoc'
 
 input = (ARGV[0] || AOC.input()).to_i
 part2_max = (ARGV[1] || 50_000_000).to_i

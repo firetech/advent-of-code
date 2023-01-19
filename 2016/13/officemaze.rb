@@ -1,4 +1,4 @@
-require_relative '../../lib/aoc_api'
+require_relative '../../lib/aoc'
 
 @input = (ARGV[0] || AOC.input()).to_i
 @target = (ARGV[1] || '31,39').strip.split(',').map(&:to_i)

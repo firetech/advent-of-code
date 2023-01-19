@@ -1,4 +1,4 @@
-require_relative '../../lib/aoc_api'
+require_relative '../../lib/aoc'
 
 file = ARGV[0] || AOC.input_file()
 @player_hp = (ARGV[1] || 50).to_i

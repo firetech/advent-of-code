@@ -1,5 +1,5 @@
 require 'set'
-require_relative '../../lib/aoc_api'
+require_relative '../../lib/aoc'
 require_relative '../lib/intcode'
 
 input = File.read(ARGV[0] || AOC.input_file()).strip

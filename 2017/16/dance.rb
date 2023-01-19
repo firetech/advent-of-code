@@ -1,4 +1,4 @@
-require_relative '../../lib/aoc_api'
+require_relative '../../lib/aoc'
 
 file = ARGV[0] || AOC.input_file()
 last_program = ARGV[1] || 'p'

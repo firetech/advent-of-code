@@ -1,4 +1,4 @@
-require_relative '../../lib/aoc_api'
+require_relative '../../lib/aoc'
 
 file = ARGV[0] || AOC.input_file()
 part2_days = (ARGV[1] || 100).to_i

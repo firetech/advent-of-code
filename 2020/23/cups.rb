@@ -1,4 +1,4 @@
-require_relative '../../lib/aoc_api'
+require_relative '../../lib/aoc'
 
 input = ARGV[0] || File.read(AOC.input_file()).rstrip
 part1_moves = (ARGV[1] || 100).to_i

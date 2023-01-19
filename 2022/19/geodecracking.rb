@@ -1,4 +1,4 @@
-require_relative '../../lib/aoc_api'
+require_relative '../../lib/aoc'
 require_relative '../../lib/multicore'
 
 file = ARGV[0] || AOC.input_file()

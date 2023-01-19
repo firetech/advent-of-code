@@ -1,4 +1,4 @@
-require_relative '../../lib/aoc_api'
+require_relative '../../lib/aoc'
 
 min, max = File.read(ARGV[0] || AOC.input_file()).strip.split('-').map(&:to_i)
 range = min..max

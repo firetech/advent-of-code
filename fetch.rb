@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 require 'optparse'
-require_relative 'lib/aoc_api'
+require_relative 'lib/aoc'
 
 $year = Time.now.year
 today = Time.now.strftime('%Y/%d')

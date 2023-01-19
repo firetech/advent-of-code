@@ -1,4 +1,4 @@
-require_relative '../../lib/aoc_api'
+require_relative '../../lib/aoc'
 
 file = ARGV[0] || AOC.input_file()
 rows = ARGV.length > 1 ? ARGV[1..-1].map(&:to_i) : [40, 400000]

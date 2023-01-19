@@ -1,4 +1,4 @@
-require_relative '../../lib/aoc_api'
+require_relative '../../lib/aoc'
 require_relative '../../lib/multicore'
 require_relative '../lib/assembunny'
 

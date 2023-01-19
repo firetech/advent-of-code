@@ -1,5 +1,5 @@
 require 'set'
-require_relative '../../lib/aoc_api'
+require_relative '../../lib/aoc'
 
 file = ARGV[0] || AOC.input_file()
 target = (ARGV[1] || '17,61').split(',').map(&:to_i)

@@ -1,4 +1,4 @@
-require_relative '../../lib/aoc_api'
+require_relative '../../lib/aoc'
 
 input = File.read(ARGV[0] || AOC.input_file()).strip.split("\n")
 #input = ['R8,U5,L5,D3', 'U7,R6,D4,L4']
