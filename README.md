@@ -20,7 +20,7 @@ Links to the original version of my Advent of Code solutions, for the purposes o
 [Day 13](https://github.com/firetech/advent-of-code/tree/359f6ee1d2ce97f7e576ee8fec7bf0e4dc7efc38/2022/13)  
 [Day 14](https://github.com/firetech/advent-of-code/tree/aa2437af78f5a4fe015544a757b52c0b5aa50722/2022/14)  
 [Day 15](https://github.com/firetech/advent-of-code/tree/bad57707b3b4e22791ee71c3264021e040425aef/2022/15)  
-[Day 16](https://github.com/firetech/advent-of-code/tree/7a84602b85a19ad629a546dc750b190f1979d222/2022/16) (Note: broken by a bad last-minute optimization before committing)  
+[Day 16](https://github.com/firetech/advent-of-code/tree/7a84602b85a19ad629a546dc750b190f1979d222/2022/16) (Note: broken by a bad last-minute optimization before committing, fixed [here](https://github.com/firetech/advent-of-code/commit/08b1a238d97f23914871429c5a0644a38cec7fd6))  
 [Day 17](https://github.com/firetech/advent-of-code/tree/e4f1f9f7a4b046f9979ad1ee1e7e80332268c0bd/2022/17)  
 [Day 18](https://github.com/firetech/advent-of-code/tree/518fc9136c5e5a317ec6e468c86c484504446e48/2022/18)  
 Day 19 [part 1](https://github.com/firetech/advent-of-code/tree/f231eb66f0d18bcbb507506646c1d09b16648377/2022/19), [part 2](https://github.com/firetech/advent-of-code/tree/be4865e13939a6cbdcdd007065e4d7a9d9ae4aba/2022/19/geodecracking2.rb) (Forgot `git push` until after optimization this day...)  
