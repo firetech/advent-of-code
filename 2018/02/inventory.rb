@@ -21,24 +21,22 @@ puts "List checksum: #{counts[2] * counts[3]}"
 
 # Part 2
 common_id = nil
-@boxes.each_with_index do |box1, i|
-  @boxes[i..-1].each do |box2|
-    mismatch = nil
-    box1.each_char.with_index do |char, c|
-      if box2[c] != char
-        if mismatch.nil?
-          mismatch = c
-        else
-          mismatch = nil
-          break
-        end
+@boxes.combination(2) do |box1, box2|
+  mismatch = nil
+  box1.each_char.with_index do |char, c|
+    if box2[c] != char
+      if mismatch.nil?
+        mismatch = c
+      else
+        mismatch = nil
+        break
       end
     end
-    unless mismatch.nil?
-      common_id = box1.clone
-      common_id[mismatch] = ''
-      break
-    end
+  end
+  unless mismatch.nil?
+    common_id = box1.clone
+    common_id[mismatch] = ''
+    break
   end
   break unless common_id.nil?
 end
