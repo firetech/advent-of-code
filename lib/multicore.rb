@@ -32,7 +32,7 @@ module Multicore
     else
       # Normal Ruby, let's fork!
       write_output = ->(output, val) do
-        output.puts(Marshal::dump(val))
+        output.print(Marshal::dump(val))
         output.print(IPC_TAIL)
       end
       read_input = ->(input) do
