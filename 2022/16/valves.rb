@@ -56,7 +56,7 @@ puts "Most pressure released: #{visit.values.max}"
 
 # Part 2
 visited2 = visit(26).sort_by(&:last)
-max = visited2.first.last
+max = visited2.last.last
 val = 0
 until (o1, v1 = visited2.pop).nil?
   break if v1 + max < val
