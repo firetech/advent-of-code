@@ -41,6 +41,7 @@ map.each_with_index do |line, y|
     end
   end
 end
+@blizzard_cycle = @width.lcm(@height)
 
 start_x = map.first.index('.')
 @start = to_pos(start_x, 1)
@@ -72,7 +73,7 @@ until queue.empty?
 
   new_time = time + 1
 
-  blizzards = @blizzards[new_time]
+  blizzards = @blizzards[new_time % @blizzard_cycle]
   if blizzards.nil?
     # Move blizzards
     blizzards = {}
@@ -89,14 +90,14 @@ until queue.empty?
         blizzards[new_pos] << [dx, dy]
       end
     end
-    @blizzards[new_time] = blizzards
+    @blizzards[new_time % @blizzard_cycle] = blizzards
   end
 
   # Move expedition
   x, y = from_pos(exp_pos)
   MOVES.each do |dx, dy|
     new_pos = to_pos(x + dx, y + dy)
-    next if @blizzards[new_time].has_key?(new_pos) or @walls.has_key?(new_pos)
+    next if blizzards.has_key?(new_pos) or @walls.has_key?(new_pos)
     visited[new_time] ||= Hash.new(false)
     next if visited[new_time].has_key?(new_pos)
     visited[new_time][new_pos] = true
