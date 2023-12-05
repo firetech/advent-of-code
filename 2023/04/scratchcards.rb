@@ -29,7 +29,7 @@ puts "Total points: #{points}"
 def play(card)
   cards = @cache[card]
   if cards.nil?
-    wins = @cards[card]
+    wins = @cards[card] or 0
     cards = wins
     wins.times do |n|
       cards += play(card + 1 + n)
