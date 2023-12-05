@@ -1,14 +1,14 @@
 Advent of Code
 ==============
 
-My solutions to Advent of Code. Mainly for my own entertainment. I make no claims that these are good solutions.
+My solutions to [Advent of Code](http://adventofcode.com). Mainly for my own entertainment. I make no claims that these are good solutions.
 
 I usually use Ruby as my language of choice, with possible exceptions for when another language is more appropriate for a specific task.
 
-Utilities
-=========
+Utilities & Libraries
+=====================
 
-I've also included some utilities in this repository.
+I've also included some utilities and custom libraries in this repository.
 
 fetch.rb
 --------
@@ -25,3 +25,19 @@ Parses private leaderboard JSON data and outputs some interesting statisticts:
 skeleton.rb
 -----------
 My starting point for each puzzle. Contains the stuff I mostly add to my solutions.
+
+lib/aoc.rb
+----------
+Library for communicating with adventofcode.com. Mainly for getting the input automatically using `AOC.input_file()`.
+
+lib/priority_queue.rb
+---------------------
+A simple (but still sufficiently fast) priority queue implementation in pure Ruby. About as fast as other pure Ruby implementations I've found, but has no dependencies.
+
+lib/multicore.rb
+----------------
+Library for running processing on multiple CPU cores.
+
+Threading isn't sufficient in normal Ruby due to the Global Interpreter Lock limiting execution to only one thread at a time. To achieve true parallelism, we need to fork (which doesn't work in Windows). Also compatibile with JRuby (which does have true parallelism, but can't fork).
+
+This library is **NOT** recommended for everyday use (forking can be quite expensive), but works well in this context.
