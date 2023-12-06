@@ -1,4 +1,5 @@
 require_relative '../../lib/aoc'
+require_relative '../../lib/aoc_math'
 
 file = ARGV[0] || AOC.input_file()
 #file = 'example1'
@@ -53,30 +54,6 @@ puts "Closest particle in long term: #{closest}"
 ################################################################################
 # Part 2
 
-# Applied algebra... :)
-
-# a*t^2 + b*t + c = 0
-# t = -b/(2*a) +/- sqrt(D), D = (b/2*a)^2 - c/a >= 0
-def quad_solutions(a, b, c)
-  if a != 0
-    d = (b / (2.0 * a))**2 - c/a.to_f
-    return [] if d < 0 # I'd rather avoid complex numbers...
-    neg_b_div_2a = -b / (2.0 * a)
-    return [ neg_b_div_2a ] if d == 0
-    d_sqrt = Math.sqrt(d)
-    return [ neg_b_div_2a - d_sqrt, neg_b_div_2a + d_sqrt ]
-  elsif b != 0
-    # a = 0 => Linear function
-    return [ -c / b.to_f ]
-  elsif c != 0
-    # This function is constant, but not 0...
-    return []
-  else
-    # a = b = c = 0, any t is a valid solution
-    return nil
-  end
-end
-
 collisions = {}
 @particles.keys.combination(2) do |i_1,i_2|
   p_1 = @particles[i_1]
@@ -88,7 +65,7 @@ collisions = {}
     # a_1*t^2 + b_1*t + c_1 - (a_2*t^2 + b_2*t + c_2) = 0
     # a_1*t^2 + b_1*t + c_1 - a_2*t^2 - b_2*t - c_2 = 0
     # (a_1-a_2)*t^2 + (b_1-b_2)*t + (c_1-c_2) = 0
-    axis_collisions = quad_solutions(a_1-a_2, b_1-b_2, c_1-c_2)
+    axis_collisions = AOCMath.quadratic_solutions(a_1-a_2, b_1-b_2, c_1-c_2)
     next if axis_collisions.nil?
     # Filter integer results (accounting for rounding errors)
     axis_collisions.select! { |x| x > 0 and (x - x.round).abs < 1e-5 }
