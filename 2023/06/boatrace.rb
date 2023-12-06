@@ -18,17 +18,26 @@ def race(times, distances)
   prod = 1
   times.zip(distances) do |time, distance|
     speed = 0
-    winning = 0
+    minimum = nil
+    maximum = nil
     1.upto(time-1) do |hold|
       speed += 1
       dist = (time - hold) * speed
       if dist > distance
-        winning += 1
-      elsif winning > 0
-        #break
+        minimum = hold
+        break
       end
     end
-    prod *= winning
+    speed = time
+    (time-1).downto(1) do |hold|
+      speed -= 1
+      dist = (time - hold) * speed
+      if dist > distance
+        maximum = hold
+        break
+      end
+    end
+    prod *= maximum - minimum + 1
   end
   return prod
 end
