@@ -21,6 +21,9 @@ def race(times, distances)
     # x * (time - x) > distance
     # -x^2 + time*x - distance > 0
     min, max = AOCMath.quadratic_solutions(-1, time, -distance)
+    # We need to beat the record, not just touch it.
+    min += 1 if min.ceil == min
+    max -= 1 if max.ceil == max
     prod *= max.floor - min.ceil + 1
   end
   return prod
