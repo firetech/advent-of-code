@@ -1,4 +1,5 @@
 require_relative '../../lib/aoc'
+require_relative '../../lib/aoc_math'
 
 file = ARGV[0] || AOC.input_file()
 #file = 'example1'
@@ -17,27 +18,10 @@ end
 def race(times, distances)
   prod = 1
   times.zip(distances) do |time, distance|
-    speed = 0
-    minimum = nil
-    maximum = nil
-    1.upto(time-1) do |hold|
-      speed += 1
-      dist = (time - hold) * speed
-      if dist > distance
-        minimum = hold
-        break
-      end
-    end
-    speed = time
-    (time-1).downto(1) do |hold|
-      speed -= 1
-      dist = (time - hold) * speed
-      if dist > distance
-        maximum = hold
-        break
-      end
-    end
-    prod *= maximum - minimum + 1
+    # x * (time - x) > distance
+    # -x^2 + time*x - distance > 0
+    min, max = AOCMath.quadratic_solutions(-1, time, -distance)
+    prod *= max.floor - min.ceil + 1
   end
   return prod
 end
