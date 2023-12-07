@@ -89,7 +89,7 @@ module AOC
         exit 1
       end
     end
-    day = '%02i' % day # Make sure single digit days are zero-padded.
+    day = '%02i' % day.to_i # Make sure single digit days are zero-padded.
     file = File.join(inputs, "#{year}-#{day}.txt")
     if not File.exist?(file)
       fetch("/#{year}/day/#{day.to_i}/input", file)
