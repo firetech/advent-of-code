@@ -20,31 +20,29 @@ map.split("\n").each do |line|
 end
 
 # Part 1
-step = 0
-pos = 'AAA'
-until pos == 'ZZZ' or @map[pos].nil? # Latter part is just for example3
-  pos = @map[pos][@directions[step % @directions.length]]
-  raise 'Ehm?' if pos.nil?
-  step += 1
+if @map.has_key?('AAA') and @map.has_key?('ZZZ') # For example3
+  step = 0
+  pos = 'AAA'
+  until pos == 'ZZZ'
+    pos = @map[pos][@directions[step % @directions.length]]
+    raise 'Ehm?' if pos.nil?
+    step += 1
+  end
+  puts "Steps to ZZZ: #{step}"
 end
-puts "Steps to ZZZ: #{step}"
 
 # Part 2
 step = 0
 pos = @map.keys.select { |p| p.end_with?('A') }
-cycle = Array.new(pos.length) { nil }
-done = Array.new(pos.length) { false }
-while done.include?(false)
+cycle = [nil] * pos.length
+while cycle.include?(nil)
   pos.map!.with_index do |p, i|
-    next if done[i]
+    next unless cycle[i].nil?
     new_pos = @map[p][@directions[step % @directions.length]]
     raise 'Ehm?' if new_pos.nil?
     if new_pos.end_with?('Z')
       if cycle[i].nil?
-        cycle[i] = -step
-      elsif cycle[i] < 0
-        cycle[i] += step
-        done[i] = true
+        cycle[i] = step + 1
       end
     end
     new_pos
