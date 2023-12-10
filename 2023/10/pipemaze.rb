@@ -7,7 +7,10 @@ file = ARGV[0] || AOC.input_file()
 #file = 'example4'
 #file = 'example5'
 
-@start = nil
+DIRS = [[0, -1], [-1, 0], [1, 0], [0, 1]]
+
+# Construct map
+start_cell = []
 @map = File.read(file).rstrip.split("\n").map.with_index do |line, y|
   line.chars.map.with_index do |char, x|
     case char
@@ -26,55 +29,61 @@ file = ARGV[0] || AOC.input_file()
     when '.'
       []
     when 'S'
-      @start = [x, y]
-      :start
+      @start_x = x
+      @start_y = y
+      start_cell
     else
       raise "Unexpected map char: '#{char}'"
     end
   end
 end
-
-DIRS = [[0, -1], [-1, 0], [1, 0], [0, 1]]
-
 # Find start position shape
-sx, sy = @start
-start_shape = []
 DIRS.each do |dx1, dy1|
-  ((@map[sy + dy1] or [])[sx + dx1] or []).each do |dx2, dy2|
+  ((@map[@start_y + dy1] or [])[@start_x + dx1] or []).each do |dx2, dy2|
     if dx1 + dx2 == 0 and dy1 + dy2 == 0
-      start_shape << [dx1, dy1]
+      start_cell << [dx1, dy1]
     end
   end
 end
-@map[sy][sx] = start_shape
 
 # Part 1
 # Traverse loop
-@depth = { @start => 0 }
-queue = [ @start ]
+@depth = Array.new(@map.length) { Array.new(@map.first.length) }
+@depth[@start_y][@start_x] = 0
+queue = [ [@start_x, @start_y] ]
+max_depth = 0
 until queue.empty?
-  pos = queue.shift
-  x, y = pos
-  depth = @depth[pos]
+  x, y = queue.shift
+  depth = @depth[y][x]
   @map[y][x].each do |dx, dy|
-    new_pos = [x + dx, y + dy]
-    next if @depth.has_key?(new_pos)
-    @depth[new_pos] = depth + 1
-    queue << new_pos
+    nx = x + dx
+    ny = y + dy
+    next unless @depth[ny][nx].nil?
+    new_depth = depth + 1
+    max_depth = new_depth if new_depth > max_depth
+    @depth[ny][nx] = new_depth
+    queue << [nx, ny]
   end
 end
 
-puts "Farthest from start: #{@depth.values.max}"
+puts "Farthest from start: #{max_depth}"
 
 # Part 2
 # Enlarge map (of the loop only) so we can traverse between adjacent pipes.
+# Each cell in the original becomes 3x3 cells in the new map.
+#           .#.       ...       .#.
+# e.g. J => ##.  F => .##  | => .#.
+#           ...       .#.       .#.
 @fill_map = Array.new(@map.length * 3) { Array.new(@map.first.length * 3, false) }
-@depth.each_key do |x, y|
-  fx = x * 3 + 1
-  fy = y * 3 + 1
-  @fill_map[fy][fx] = true
-  @map[y][x].each do |dx, dy|
-    @fill_map[fy + dy][fx + dx] = true
+@depth.each_with_index do |line, y|
+  line.each_with_index do |depth, x|
+    next if depth.nil?
+    fx = x * 3 + 1
+    fy = y * 3 + 1
+    @fill_map[fy][fx] = true
+    @map[y][x].each do |dx, dy|
+      @fill_map[fy + dy][fx + dx] = true
+    end
   end
 end
 # Flood fill outside
@@ -95,6 +104,7 @@ until queue.empty?
   end
 end
 
+# Check centerpoints of each 3x3 cell if they're untouched (i.e. and enclosed tile in the original map).
 inside = 0
 @map.each_index do |y|
   @map.first.each_index do |x|
