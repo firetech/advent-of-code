@@ -5,85 +5,58 @@ file = ARGV[0] || AOC.input_file()
 #file = 'example1'
 
 @cache = {}
-def count_possibles(pattern, groups, in_group = 0)
-  cache_key = [pattern, groups, in_group].hash
-  cache = @cache[cache_key]
-  if cache.nil?
-    cache = inner_count_possibles(pattern, groups, in_group)
-    @cache[cache_key] = cache
-  end
-  return cache
-end
-def inner_count_possibles(pattern, groups, in_group = 0)
-  # Base cases
-  if pattern.empty?
-    if in_group > 0
-      return (groups.length == 1 and in_group == groups.first) ? 1 : 0
-    else
-      return groups.empty? ? 1 : 0
-    end
-  end
+def count_possibles(pattern, groups, clear_cache = true)
+  @cache.clear if clear_cache
 
-  # Current group is too long
-  return 0 if in_group > 0 and (groups.empty? or in_group > groups.first)
-
-  # Check first character and recurse to the next
-  remaining = pattern[1..-1]
-  case pattern[0]
-  when '.'
-    if in_group > 0
-      # End current group, stop if it's the wrong length
-      return 0 if in_group != groups.first
-      groups = groups[1..-1]
-    end
-    return count_possibles(remaining, groups, 0)
-  when '#'
-    # Continue (or start) current group
-    return count_possibles(remaining, groups, in_group+1)
-  when '?'
-    if groups.empty? or in_group == groups.first
-      # No groups left, or current group is done, spring must be broken
-      return count_possibles(remaining, groups[1..-1] || [], 0)
-    elsif in_group > 0
-      # Current group isn't done yet, spring must be operational
-      return count_possibles(remaining, groups, in_group+1)
-    end
-    # Group hasn't started, we'll have to try both starting it and waiting
-    return count_possibles(remaining, groups, in_group+1) +
-           count_possibles(remaining, groups, in_group)
-  else
-    raise "Unexpected state: #{pattern[0]}"
+  if groups.empty?
+    # We're done (or are we?)
+    return (pattern.nil? or not pattern.include?('#')) ? 1 : 0
   end
+  # Out of springs to check (but we still have groups left)
+  return 0 if pattern.nil?
+
+  g = groups.first
+  # Group doesn't fit in remaining pattern
+  return 0 if pattern.length < g
+
+  cache_key = pattern.length << 8 | groups.length
+  possible = @cache[cache_key]
+  # Try consuming a group or moving to the next spring
+  if possible.nil?
+    possible = 0
+    if not pattern[0,g].include?('.') and pattern[g] != '#'
+      # Group fits, consume it (and a separator after)
+      possible += count_possibles(pattern[g+1..-1], groups[1..-1], false)
+    end
+    if pattern[0] != '#'
+      # Group is not enforced, move to next spring without consuming a group
+      possible += count_possibles(pattern[1..-1], groups, false)
+    end
+    @cache[cache_key] = possible
+  end
+  return possible
 end
 
-input, output, stop = Multicore.run do |worker_in, worker_out|
-  until (line = worker_in[]).nil?
-    case line
-    when /\A([.?#]+) ((?:\d+(?:,|\z))+)/
-      pattern = Regexp.last_match(1)
-      groups = Regexp.last_match(2).split(',').map(&:to_i)
-    else
-      raise "Malformed line: '#{line}'"
-    end
-
-    worker_out[[0, count_possibles(pattern, groups)]]
-    worker_out[[1, count_possibles(([pattern] * 5).join('?'), groups * 5)]]
-  end
-end
-lines = 0
+sum1 = 0
+sum2 = 0
 File.read(file).rstrip.split("\n").each do |line|
-  input << line
-  lines += 1
-end
-input.close
-sum = [0, 0]
-(lines * 2).times do
-  part, possibles = output.pop
-  sum[part] += possibles
+  case line
+  when /\A([.?#]+) ((?:\d+(?:,|\z))+)/
+    pattern = Regexp.last_match(1)
+    groups = Regexp.last_match(2).split(',').map(&:to_i)
+  else
+    raise "Malformed line: '#{line}'"
+  end
+
+  # Part 1
+  sum1 += count_possibles(pattern, groups)
+
+  # Part 2 (reusing the cache from part 1, since the ends are the same)
+  sum2 += count_possibles(([pattern] * 5).join('?'), groups * 5, false)
 end
 
 # Part 1
-puts "Sum of possible arrangement counts: #{sum[0]}"
+puts "Sum of possible arrangement counts: #{sum1}"
 
 # Part 2
-puts "Sum of possible arrangement counts (unfolded): #{sum[1]}"
+puts "Sum of possible arrangement counts (unfolded): #{sum2}"
