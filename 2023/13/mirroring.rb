@@ -7,40 +7,37 @@ file = ARGV[0] || AOC.input_file()
   block.split("\n").map(&:chars)
 end
 
-@order = {}
-def find_fold(lines)
-  # Generate a somewhat optimal order of position checks
-  order = @order[lines.count]
-  if order.nil?
-    middle = lines.count / 2
-    order = [ middle ]
-    min = middle - 1
-    max = middle + 1
-    while min >= 1 or max < lines.count
-      order << min if min >= 1
-      order << max if max < lines.count
-      min -= 1
-      max += 1
-    end
-    @order[lines.count] = order
-  end
-  order.each do |i|
-    found = true
+def find_fold(lines, expected_diff = 0)
+  1.upto(lines.count - 1) do |i|
     before, after = lines[0...i], lines[i..-1]
     len = [after.length, before.length].min
-    next if before.last(len) != after.first(len).reverse
-    return i
+    diffs = 0
+    before.last(len).zip(after.first(len).reverse) do |left, right|
+      left.zip(right) do |l, r|
+        diffs += 1 if l != r
+        break if diffs > expected_diff
+      end
+      break if diffs > expected_diff
+    end
+    return i if diffs == expected_diff
   end
   return nil
 end
 
-sum = 0
+sum = [0, 0]
 @patterns.each do |pat|
-  fold_y = find_fold(pat)
-  if fold_y.nil?
-    sum += find_fold(pat.transpose)
-  else
-    sum += 100 * fold_y
+  sum.each_index do |diffs|
+    fold_y = find_fold(pat, diffs)
+    if fold_y.nil?
+      sum[diffs] += find_fold(pat.transpose, diffs)
+    else
+      sum[diffs] += 100 * fold_y
+    end
   end
 end
-puts "Fold position summary: #{sum}"
+
+# Part 1
+puts "Fold position summary: #{sum[0]}"
+
+# Part 2
+puts "Fold position summary (1 smudge): #{sum[1]}"
