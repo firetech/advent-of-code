@@ -67,5 +67,5 @@ end
 # Part 1
 puts "Minimum heat loss: #{path(3)}"
 
-# Part 1
+# Part 2
 puts "Minimum heat loss (ultra crucibles): #{path(10, 4)}"
