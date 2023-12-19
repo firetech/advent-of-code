@@ -70,7 +70,7 @@ accepted = @parts.select do |part|
   workflow == :A
 end
 
-puts "Sum of accepted part ratings: #{@accepted.sum { |part| part.values.sum }}"
+puts "Sum of accepted part ratings: #{accepted.sum { |part| part.values.sum }}"
 
 
 # Part 2
