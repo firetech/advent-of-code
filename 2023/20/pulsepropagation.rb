@@ -32,7 +32,7 @@ File.read(file).rstrip.split("\n").each do |line|
     raise "Malformed line: '#{line}'"
   end
 end
-# Keep track of inputs and add all inputs to conjunction modules' memories
+# Add all inputs to conjunction modules' memories
 @modules.each_key do |name|
   @modules[name][:recipients].each do |r_name|
     r = @modules[r_name]
@@ -89,19 +89,41 @@ end
 puts "Product of low and high pulse counts: #{low_count * high_count}"
 
 # Part 2
-rx_inputs = @modules.select { |_, mod| mod[:recipients].include?(:rx) }.map(&:first)
-raise 'Wat.' if rx_inputs.length > 1
-watch_modules = @modules.select { |_, mod| not (mod[:recipients] & rx_inputs).empty? }.map(&:first)
-cycles = {}
-cycle = 0
-modules = @modules.transform_values(&:clone)
-until cycles.length == watch_modules.length
-  cycle += 1
-  count = push(modules)
-  watch_modules.each do |name|
-    if count[name][0] > 0
-      cycles[name] = cycle
+watch_modules = [:rx]
+watch_output = 0
+while watch_modules.length == 1
+  watch_modules = @modules.select { |_, mod| not (mod[:recipients] & watch_modules).empty? }.map(&:first)
+  watch_output = 1 - watch_output
+  unless watch_modules.empty?
+    if watch_modules.length == 1
+      is_inverter = @modules[watch_modules.first][:type] == :&
+      raise 'Single module on route to rx not a conjunction!' unless is_inverter
+    else
+      # This likely never happens, as it'd make the solution too simple.
+      raise 'Even number of inverters on route to rx!' unless watch_output == 0
     end
   end
 end
-puts "Button pushes needed for low pulse to rx: #{cycles.values.inject(&:lcm)}"
+cycle_start = {}
+cycle_end = {}
+cycle = 0
+modules = @modules.transform_values(&:clone)
+until cycle_end.length == watch_modules.length
+  cycle += 1
+  count = push(modules)
+  watch_modules.each do |name|
+    if count[name][watch_output] > 0
+      if cycle_start[name].nil?
+        cycle_start[name] = cycle
+      elsif cycle_end[name].nil?
+        cycle_end[name] = cycle
+      end
+    end
+  end
+end
+cycle_start.each do |name, start|
+  if cycle_end[name] - start != start
+    raise "Cycle length for #{name.to_s} not equal to cycle start, more mathing needed!"
+  end
+end
+puts "Button pushes needed for low pulse to rx: #{cycle_start.values.inject(&:lcm)}"
