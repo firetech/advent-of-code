@@ -4,9 +4,9 @@ require_relative '../../lib/aoc'
 file = ARGV[0] || AOC.input_file()
 #file = 'example1'
 
-@map = File.read(file).rstrip.split("\n")
-@width = @map.first.length
-@height = @map.length
+@input_map = File.read(file).rstrip.split("\n")
+@width = @input_map.first.length
+@height = @input_map.length
 
 @x_bits = Math.log2(@width-1).ceil
 @x_mask = (1 << @x_bits) - 1
@@ -20,39 +20,87 @@ end
 @start = to_pos(1, 0)
 @end = to_pos(@width-2, @height-1)
 
-queue = [[@start, Set[@start]]]
-length = Hash.new(0)
-until queue.empty?
-  pos, path = queue.shift
-  next if pos == @end
+# Convert map to bidirected graph
+@sloped_paths = {}
+@all_paths = {}
+@input_map.each_with_index do |line, y|
+  line.each_char.with_index do |c, x|
+    next if c == '#'
+    pos = to_pos(x, y)
+    [[ 0, -1], [ 1,  0], [ 0,  1], [-1,  0]].each do |dx, dy|
+      nx = x + dx
+      ny = y + dy
+      next if ny < 0 or ny >= @height
+      next if @input_map[ny][nx] == '#'
+      npos = to_pos(nx, ny)
 
-  x, y = from_pos(pos)
-  this_length = length[pos]
-  deltas = case @map[y][x]
-    when '^'
-      [[ 0, -1]]
-    when '>'
-      [[ 1,  0]]
-    when 'v'
-      [[ 0,  1]]
-    when '<'
-      [[-1,  0]]
-    else
-      [[ 0, -1], [ 1,  0], [ 0,  1], [-1,  0]]
-  end
-  deltas.each do |dx, dy|
-    nx = x + dx
-    ny = y + dy
-    next if ny < 0 # Don't leave the area
-    npos = to_pos(nx, ny)
-    next if @map[ny][nx] == '#'
-    next if path.include?(npos)
+      # Part 1
+      sloped_possible = case @input_map[ny][nx]
+        when '^'
+          dy == -1
+        when '>'
+          dx == 1
+        when 'v'
+          dy == 1
+        when '<'
+          dx == -1
+        else
+          true
+      end
+      @sloped_paths[pos] ||= {}
+      @sloped_paths[pos][npos] = sloped_possible ? 1 : Float::INFINITY
 
-    nlength = this_length + 1
-    if nlength > length[npos]
-      length[npos] = nlength
-      queue << [npos, path + [npos]]
+      # Part 2
+      @all_paths[pos] ||= {}
+      @all_paths[pos][npos] = 1
     end
   end
 end
-pp length[@end]
+
+[@sloped_paths, @all_paths].each do |paths|
+  # Replace corridors with single graph edge
+  paths.keys.each do |pos|
+    my_paths = paths[pos]
+    next if my_paths.count != 2
+    a, b = my_paths.keys
+    paths[a][b] = paths[a].delete(pos) + my_paths[b]
+    paths[b][a] = paths[b].delete(pos) + my_paths[a]
+    paths.delete(pos)
+  end
+  # Remove infinite paths (will affect @sloped_paths only)
+  paths.each_value do |my_paths|
+    my_paths.reject! { |pos, steps| steps == Float::INFINITY }
+  end
+end
+
+# DFS with skipping of already visited nodes
+def best_walk(paths)
+  stack = [[@start, 0]]
+  visited = Set[]
+  max = 0
+  until stack.empty?
+    pos, steps = stack.pop
+    if steps == :done
+      visited.delete(pos)
+      next
+    elsif pos == @end
+      max = steps if steps > max
+      next
+    end
+
+    next if visited.include?(pos)
+    visited << pos
+
+    stack << [pos, :done]
+    paths[pos].each do |npos, nsteps|
+      stack << [npos, steps + nsteps]
+    end
+  end
+  return max
+end
+
+# Part 1
+puts "Longest hike: #{best_walk(@sloped_paths)}"
+
+# Part 2
+puts "Longest hike (with climbing): #{best_walk(@all_paths)}"
