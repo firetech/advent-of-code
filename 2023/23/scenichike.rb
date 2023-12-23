@@ -1,4 +1,3 @@
-require 'set'
 require_relative '../../lib/aoc'
 
 file = ARGV[0] || AOC.input_file()
@@ -74,28 +73,18 @@ end
 end
 
 # DFS with skipping of already visited nodes
-def best_walk(paths)
-  stack = [[@start, 0]]
-  visited = Set[]
-  max = 0
-  until stack.empty?
-    pos, steps = stack.pop
-    if steps == :done
-      visited.delete(pos)
-      next
-    elsif pos == @end
-      max = steps if steps > max
-      next
-    end
-
-    next if visited.include?(pos)
-    visited << pos
-
-    stack << [pos, :done]
-    paths[pos].each do |npos, nsteps|
-      stack << [npos, steps + nsteps]
+def best_walk(paths, pos = @start, visited = Hash.new(false))
+  return 0 if pos == @end
+  max = nil
+  visited[pos] = true
+  paths[pos].each do |npos, nsteps|
+    next if visited[npos]
+    unless (walk = best_walk(paths, npos, visited)).nil?
+      walk += nsteps
+      max = walk if max.nil? or walk > max
     end
   end
+  visited[pos] = false
   return max
 end
 
