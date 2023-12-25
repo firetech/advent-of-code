@@ -1,5 +1,6 @@
 require 'set'
 require_relative '../../lib/aoc'
+require_relative '../../lib/multicore'
 
 file = ARGV[0] || AOC.input_file()
 #file = 'example1'
@@ -52,24 +53,45 @@ end
 
 # Apply the Girvan-Newman algorithm three times
 # https://en.wikipedia.org/wiki/Girvan%E2%80%93Newman_algorithm
-split = nil
-3.times do
-  betweenness = Hash.new(0)
-  @neighbours.each_key do |from|
-    bfs(from) do |a, b|
-      betweenness[to_key(a, b)] += 1
+splits = []
+stop = nil
+begin
+  input, output, stop = Multicore.run do |worker_in, worker_out|
+    until (from, splits = worker_in[]).nil?
+      splits.each do |a, b|
+        @neighbours[a].delete(b)
+        @neighbours[b].delete(a)
+      end
+      edges = []
+      bfs(from) do |a, b|
+        edges << to_key(a, b)
+      end
+      worker_out[edges]
     end
   end
-  split = from_key(betweenness.max_by(&:last).first)
-  a, b = split
-  @neighbours[a].delete(b)
-  @neighbours[b].delete(a)
+  3.times do
+    betweenness = Hash.new(0)
+    @neighbours.each_key do |from|
+      input << [from, splits]
+    end
+    @neighbours.count.times do
+      output.pop.each do |edge|
+        betweenness[edge] += 1
+      end
+    end
+    split = from_key(betweenness.max_by(&:last).first)
+    a, b = split
+    @neighbours[a].delete(b)
+    @neighbours[b].delete(a)
+    splits << split
+  end
+ensure
+  stop[] unless stop.nil?
 end
-
 
 # Find the size of each subgraph
 visited = []
-split.each do |from|
+splits.last.each do |from|
   visited << bfs(from)
 end
 if visited.combination(2).any? { |a, b| not a.disjoint?(b) }
