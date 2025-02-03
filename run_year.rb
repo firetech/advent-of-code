@@ -65,7 +65,7 @@ Dir.glob(File.join(__dir__, 'lib/*.rb')) do |lib|
 end
 
 times = {}
-Dir.glob(File.join(__dir__, year, '*')) do |day_folder|
+Dir.glob(File.join(__dir__, year, '*')).sort.each do |day_folder|
   day = File.basename(day_folder)
   next unless day =~ /\A\d{1,2}\z/
   file = Dir.glob(File.join(day_folder, '*.rb')).sort_by(&:length).first
