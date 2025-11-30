@@ -10,3 +10,8 @@
 # Backup files
 .*.sw?
 *~
+# System-dependent Ruby environment files
+.ruby-version
+Gemfile.lock
+# Local vscode config
+.vscode/
