@@ -133,7 +133,7 @@ def fight(boost = 0)
     killed = targets.sort_by { |a, t| - a.initiative }.map do |attacker, target|
       attacker.attack(target)
     end
-    if killed.all? { |k| k == 0 }
+    if killed.all?(0)
       total_units = 0
       units_str = armies.map do |team, groups|
         count = groups.map(&:count).sum
