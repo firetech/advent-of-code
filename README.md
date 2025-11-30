@@ -5,6 +5,7 @@ My solutions to [Advent of Code](http://adventofcode.com). Mainly for my own ent
 
 So far, all my solutions have been implemented in pure Ruby.
 
+
 Utilities & Libraries
 =====================
 
@@ -51,3 +52,13 @@ Library for running processing on multiple CPU cores.
 Threading isn't sufficient in normal Ruby due to the Global Interpreter Lock limiting execution to only one thread at a time. To achieve true parallelism, we need to fork (which doesn't work in Windows). Also compatibile with JRuby (which does have true parallelism, but can't fork).
 
 This library is **NOT** recommended for everyday use (forking can be quite expensive), but works well in this context.
+
+
+Automation Information
+======================
+
+This repo follows the [automation guidelines](https://www.reddit.com/r/adventofcode/wiki/faqs/automation) on the [/r/adventofcode](https://www.reddit.com/r/adventofcode) community wiki. Specifically:
+
+* The `User-Agent` header contains information linking it to the creator of this repo: [`AOC.fetch()` from lib/aoc.rb, lines 44-46](lib/aoc.rb#L44)
+* Inputs are cached on successful download: [`AOC.input_file()`, from lib/aoc.rb, lines 97-100](lib/aoc.rb#L97)
+* No throttling is done, BUT all outbound calls from the contents of this repo are made as a result of a manual action, i.e. running a solution or tool. Nothing included in this repo (or made by its creator) is running anything from here in a repeated manner. (If you fork this repo or use anything from it, please keep it that way, OR implement throttling as described in the guidelines linked above.)
