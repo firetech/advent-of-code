@@ -99,12 +99,12 @@ Dir.glob(File.join(__dir__, year, '*')).sort.each do |day_folder|
         start = Time.now
         load(file)
         done = Time.now
-        write_from_fork.print(Marshal.dump(done - start))
-        write_from_fork.print('__TAIL__')
+        result = done - start
       rescue Exception => e # Catch everything, including syntax errors
-        write_from_fork.print(Marshal.dump(e))
-        write_from_fork.print('__TAIL__')
+        result = e
       end
+      write_from_fork.print(Marshal.dump({ last_fetch: AOC.last_fetch, result: done - start }))
+      write_from_fork.print('__TAIL__')
     end
     write_from_fork.close
     Timeout::timeout(60) { Process.wait(child) }
@@ -112,15 +112,18 @@ Dir.glob(File.join(__dir__, year, '*')).sort.each do |day_folder|
       read = read_from_fork.gets('__TAIL__')
       unless read.nil?
         data = Marshal.load(read.chomp('__TAIL__'))
-        case data
+        result = data[:result]
+        case result
         when Exception
-          raise data
+          raise result
         when Float
-          puts '-- Runtime: %.1f ms --' % (data * 1000)
-          times[day] = data
+          puts '-- Runtime: %.1f ms --' % (result * 1000)
+          times[day] = result
         else
-          raise "Unexpected data: #{data.inspect}"
+          raise "Unexpected result: #{result.inspect}"
         end
+        last_fetch = data[:last_fetch]
+        AOC.update_last_fetch(last_fetch) unless last_fetch.nil?
       end
     end
   ensure

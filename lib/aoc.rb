@@ -13,8 +13,30 @@ module AOC
     return token
   end
 
+  @@last_fetch = nil
+  FETCH_MIN_WAIT = 300
+
+  def self.last_fetch
+    @@last_fetch
+  end
+
+  def self.update_last_fetch(new_time = Time.now)
+    if not new_time.is_a? Time
+      raise ArgumentError, "Expected Time, got #{new_time.class.name}"
+    end
+    if not @@last_fetch.nil? and new_time < @@last_fetch
+      raise ArgumentError, "Blocked attempt to turn back throttle clock"
+    end
+    @@last_fetch = new_time
+  end
 
   def self.fetch(*args)
+    time_since_last = last_fetch.nil? ? Float::INFINITY : Time.now - last_fetch
+    if time_since_last < FETCH_MIN_WAIT
+      wait_time = FETCH_MIN_WAIT - time_since_last
+      puts "Throttling fetch() call for #{wait_time.round} seconds..."
+      sleep wait_time
+    end
     if args.length == 1 and args.first.is_a?(Array)
       requests = args.first
     elsif args.length == 2 and args.all?(String)
@@ -69,6 +91,7 @@ module AOC
         end while do_retry
       end
     end
+    update_last_fetch
   end
 
 

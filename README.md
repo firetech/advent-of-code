@@ -59,6 +59,6 @@ Automation Information
 
 This repo follows the [automation guidelines](https://www.reddit.com/r/adventofcode/wiki/faqs/automation) on the [/r/adventofcode](https://www.reddit.com/r/adventofcode) community wiki. Specifically:
 
-* The `User-Agent` header contains information linking it to the creator of this repo: [`AOC.fetch()` from lib/aoc.rb, lines 44-46](lib/aoc.rb#L44)
-* Inputs are cached on successful download: [`AOC.input_file()`, from lib/aoc.rb, lines 97-100](lib/aoc.rb#L97)
-* No throttling is done, BUT all outbound calls from the contents of this repo are made as a result of a manual action, i.e. running a solution or tool. Nothing included in this repo (or made by its creator) is running anything from here in a repeated manner. (If you fork this repo or use anything from it, please keep it that way, OR implement throttling as described in the guidelines linked above.)
+* Throttling of requests (a minimum of 5 minutes between outbound calls) _from within the same process_ is implemented: [lib/aoc.rb, lines 20-39](lib/aoc.rb#L20) (Within this repo, this really only affects [run\_year.rb](run_year.rb), which also has code to handle this throttling despite utilizing forking. No other script does more than one outbound call at a time.)
+* The `User-Agent` header contains information linking it to the creator of this repo: [lib/aoc.rb, lines 66-68](lib/aoc.rb#L66)
+* Inputs are cached on successful download: [lib/aoc.rb, lines 120-123](lib/aoc.rb#L120)
