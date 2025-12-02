@@ -69,6 +69,7 @@ Dir.glob(File.join(__dir__, year, '*')).sort.each do |day_folder|
   day = File.basename(day_folder)
   next unless day =~ /\A\d{1,2}\z/
   file = Dir.glob(File.join(day_folder, '*.rb')).sort_by(&:length).first
+  next if file.nil?
   child = nil
   begin
   # Fork in order to not taint memory of main process.
@@ -103,7 +104,7 @@ Dir.glob(File.join(__dir__, year, '*')).sort.each do |day_folder|
       rescue Exception => e # Catch everything, including syntax errors
         result = e
       end
-      write_from_fork.print(Marshal.dump({ last_fetch: AOC.last_fetch, result: done - start }))
+      write_from_fork.print(Marshal.dump({ last_fetch: AOC.last_fetch, result: result }))
       write_from_fork.print('__TAIL__')
     end
     write_from_fork.close
