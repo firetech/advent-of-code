@@ -4,27 +4,26 @@ file = ARGV[0] || AOC.input_file()
 #file = 'example1'
 
 def get_max(bank, count)
-  @cache = {}
-  @bank = bank
-  def find_max(count_left, index)
+  cache = {}
+  find_max = ->(count_left, index) do
     cache_key = [count_left, index].hash
-    max = @cache[cache_key]
+    max = cache[cache_key]
     if max.nil?
       if index < 0 or count_left < 1
         max = 0
       else
         next_index = index - 1
         max = [
-          find_max(count_left - 1, next_index) * 10 + @bank[index],
-          find_max(count_left, next_index),
+          find_max[count_left - 1, next_index] * 10 + bank[index],
+          find_max[count_left, next_index],
         ].max
       end
-      @cache[cache_key] = max
+      cache[cache_key] = max
     end
     return max
   end
 
-  return find_max(count, bank.length - 1)
+  return find_max[count, bank.length - 1]
 end
 
 @sum2 = 0  # Part 1
