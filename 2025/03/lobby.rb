@@ -1,7 +1,18 @@
 require_relative '../../lib/aoc'
+require_relative '../../lib/multicore'
 
 file = ARGV[0] || AOC.input_file()
 #file = 'example1'
+
+@banks = []
+File.read(file).rstrip.split("\n").each do |line|
+  case line
+  when /\A\d+\z/
+    @banks << line.to_i
+  else
+    raise "Malformed line: '#{line}'"
+  end
+end
 
 def get_max(bank, count)
   cache = {}
@@ -28,15 +39,29 @@ end
 
 @sum2 = 0  # Part 1
 @sum12 = 0  # Part 2
-File.read(file).rstrip.split("\n").each do |line|
-  case line
-  when /\A\d+\z/
-    @batteries = line.to_i.digits.reverse
-    @sum2 += get_max(@batteries, 2)  # Part 1
-    @sum12 += get_max(@batteries, 12)  # Part 2
-  else
-    raise "Malformed line: '#{line}'"
+stop = nil
+begin
+  input, output, stop, nrunners = Multicore.run(-8) do |worker_in, worker_out|
+    sum2 = 0  # Part 1
+    sum12 = 0  # Part 2
+    loop do
+      bank = worker_in[]
+      break if bank == :done
+      batteries = bank.digits.reverse
+      sum2 += get_max(batteries, 2)  # Part 1
+      sum12 += get_max(batteries, 12)  # Part 2
+    end
+    worker_out[[sum2, sum12]]
   end
+  @banks.each { |bank| input << bank }
+  nrunners.times do
+    input << :done
+    sum2, sum12 = output.pop
+    @sum2 += sum2  # Part 1
+    @sum12 += sum12  # Part 2
+  end
+ensure
+  stop[] unless stop.nil?
 end
 
 # Part 1
