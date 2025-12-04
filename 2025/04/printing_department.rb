@@ -11,7 +11,7 @@ file = ARGV[0] || AOC.input_file()
 #   to_pos(3, 4) + to_pos(-2, -3) == to_pos(1, 1)
 # but
 #   from_pos(to_pos(-2, -3)) != [-2, -3]
-Y_BITS = Math.log2(@map_input.length - 1).floor + 1
+Y_BITS = Math.log2(@map_input.length).floor + 1
 Y_MASK = (1 << Y_BITS) - 1
 def to_pos(x, y)
   return (x << Y_BITS) + y
@@ -24,7 +24,7 @@ end
 @map_input.each_with_index do |line, y|
   line.each_char.with_index do |char, x|
     if char == "@"
-      @map[to_pos(x, y)] = true
+      @map[to_pos(x+1, y+1)] = true
     end
   end
 end
