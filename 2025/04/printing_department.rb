@@ -3,32 +3,49 @@ require_relative '../../lib/aoc'
 file = ARGV[0] || AOC.input_file()
 #file = 'example1'
 
+@map_input = File.read(file).rstrip.split("\n")
+
+# This works for negative coordinates, BUT ONLY if they're only ever used as
+# delta values.
+# I.e.
+#   to_pos(3, 4) + to_pos(-2, -3) == to_pos(1, 1)
+# but
+#   from_pos(to_pos(-2, -3)) != [-2, -3]
+Y_BITS = Math.log2(@map_input.length - 1).floor + 1
+Y_MASK = (1 << Y_BITS) - 1
+def to_pos(x, y)
+  return (x << Y_BITS) + y
+end
+def from_pos(pos)
+  return pos >> Y_BITS, pos & Y_MASK
+end
+
 @map = Hash.new(false)
-File.read(file).rstrip.split("\n").each_with_index do |line, y|
+@map_input.each_with_index do |line, y|
   line.each_char.with_index do |char, x|
     if char == "@"
-      @map[[x, y]] = true
+      @map[to_pos(x, y)] = true
     end
   end
 end
 
 NEIGHBOURS = [
-  [-1, -1],
-  [ 0, -1],
-  [ 1, -1],
-  [-1,  0],
+  to_pos(-1, -1),
+  to_pos( 0, -1),
+  to_pos( 1, -1),
+  to_pos(-1,  0),
   # not counting itself
-  [ 1,  0],
-  [-1,  1],
-  [ 0,  1],
-  [ 1,  1],
+  to_pos( 1,  0),
+  to_pos(-1,  1),
+  to_pos( 0,  1),
+  to_pos( 1,  1),
 ]
 
 def remove_rolls(map)
   count = 0
-  new_map = map.filter do |(x, y), _|
-    neighbours = NEIGHBOURS.count do |dx, dy|
-      map[[x+dx, y+dy]]
+  new_map = map.filter do |pos, _|
+    neighbours = NEIGHBOURS.count do |dpos|
+      map[pos+dpos]
     end
     if neighbours < 4
       count += 1
