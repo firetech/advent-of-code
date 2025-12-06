@@ -5,14 +5,11 @@ file = ARGV[0] || AOC.input_file()
 
 @columns = []
 curr_col = nil
-add_curr = ->() do
-  op = curr_col.pop.join.strip.to_sym
-  @columns << [curr_col, op]
-  curr_col = nil
-end
-File.read(file).split("\n").map(&:chars).transpose.each do |col|
-  if col.all?(" ")
-    add_curr[]
+File.read(file).each_line.map(&:chars).transpose.each do |col|
+  if col.all?(/\s/)
+    op = curr_col.pop.join.strip.to_sym
+    @columns << [curr_col, op]
+    curr_col = nil
   elsif curr_col.nil?
     curr_col = col.map { |r| [r] }
   else
@@ -21,7 +18,6 @@ File.read(file).split("\n").map(&:chars).transpose.each do |col|
     end
   end
 end
-add_curr[]
 
 # Part 1
 sum1 = @columns.sum do |numbers, op|
