@@ -12,7 +12,7 @@ require 'optparse'
 rehearsal = false
 print_usage = false
 opts = OptionParser.new do |opts|
-  opts.banner = "Usage: #{opts.program_name} [options] [year]"
+  opts.banner = "Usage: #{opts.program_name} [options] [year] [day ...]"
 
   opts.separator ''
   opts.separator "Will attempt to run current year (#{Time.now.year}) if " \
@@ -44,6 +44,19 @@ unless print_usage
   unless File.directory?(File.join(__dir__, year))
     print_usage = "#{year} doesn't seem to exist!"
   end
+  days = ARGV[1..-1]
+  if days.nil? or days.empty?
+    days = '*'
+  else
+    formatted_days = days.map do |day|
+      formatted_day = '%02i' % day.to_i(10)
+      unless File.directory?(File.join(__dir__, year, formatted_day))
+        print_usage = "#{year}/#{formatted_day} doesn't seem to exist!"
+      end
+      formatted_day
+    end
+    days = "{#{formatted_days.join(',')}}"
+  end
 end
 
 if print_usage
@@ -65,7 +78,7 @@ Dir.glob(File.join(__dir__, 'lib/*.rb')) do |lib|
 end
 
 times = {}
-Dir.glob(File.join(__dir__, year, '*')).sort.each do |day_folder|
+Dir.glob(File.join(__dir__, year, days)).sort.each do |day_folder|
   day = File.basename(day_folder)
   next unless day =~ /\A\d{1,2}\z/
   file = Dir.glob(File.join(day_folder, '*.rb')).sort_by(&:length).first

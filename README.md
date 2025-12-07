@@ -29,7 +29,7 @@ My starting point for each puzzle. Contains the stuff I mostly add to my solutio
 
 run\_year.rb
 ------------
-Runs the main solution (shortest filename) for every day of a given year, with a timer running for each.
+Runs the main solution (shortest filename) for every day (or specified days) of a given year, with a timer running for each.
 
 Includes an optional rehearsal mode similar to the [bmbm function](https://ruby-doc.org/current/stdlibs/benchmark/Benchmark.html#method-c-bmbm) of Ruby's Benchmark library.
 
