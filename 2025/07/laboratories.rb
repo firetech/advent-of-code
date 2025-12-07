@@ -4,42 +4,31 @@ require_relative '../../lib/aoc'
 file = ARGV[0] || AOC.input_file()
 #file = 'example1'
 
-@map = Hash.new(false)
-@start = nil
-lines = File.read(file).rstrip.split("\n")
-@end_y = lines.length
-lines.each_with_index do |line, y|
+@beams = Hash.new(0)
+@splits = 0  # Part 1
+File.read(file).rstrip.split("\n").each_with_index do |line, y|
+  new_beams = Hash.new(0)
   line.each_char.with_index do |char, x|
     case char
     when "S"
-      if @start.nil?
-        @start = [x, y]
-      else
-        raise "Multiple starts?"
-      end
+      new_beams[x] += 1
     when "^"
-      @map[[x, y]] = true
+      if @beams[x] > 0
+        @splits += 1  # Part 1
+        new_beams[x-1] += @beams[x]
+        new_beams[x+1] += @beams[x]
+      end
     when "."
-      # Ignore
-    end
-  end
-end
-
-beams = Set[@start.first]
-y = @start.last
-@splits = 0  # Part 1
-while y < @end_y
-  new_beams = beams.flat_map do |x|
-    if @map[[x, y]]
-      @splits += 1  # Part 1
-      [x - 1, x + 1]
+      new_beams[x] += @beams[x]
     else
-      x
+      raise "Unexpected map char '#{char}'."
     end
   end
-  beams = Set.new(new_beams)
-  y += 1
+  @beams = new_beams
 end
 
 # Part 1
 puts "Number of beam splits: #{@splits}"
+
+# Part 2
+puts "Number of timelines: #{@beams.values.sum}"
