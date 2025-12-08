@@ -1,5 +1,12 @@
 class PriorityQueue
-  def initialize
+  def initialize(use_linked_queue = false)
+    if use_linked_queue
+      require_relative 'linked_queue'
+
+      @queue_class = LinkedQueue
+    else
+      @queue_class = Array
+    end
     @queue = {}
     @map = {}
   end
@@ -12,10 +19,15 @@ class PriorityQueue
         list.delete(obj)
         @queue.delete(current_prio) if list.empty?
       end
-      @queue[prio] ||= []
-      @queue[prio] << obj
+      list = @queue[prio]
+      if list.nil?
+        list = @queue_class.new
+        @queue[prio] = list
+      end
+      list << obj
       @map[obj] = prio
     end
+    return prio
   end
 
   def pop_min
@@ -43,7 +55,7 @@ class PriorityQueue
   end
 
   def size
-    @queue.map { |_, l| l.size }.sum
+    @map.size
   end
 
   def empty?
