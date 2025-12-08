@@ -17,11 +17,24 @@ def to_box(coords)
   return (x << COORD_BITS | y ) << COORD_BITS | z
 end
 
-@connections = @boxes.combination(2).sort_by do |(x1, y1, z1), (x2, y2, z2)|
-  # Sorting by distance squared should give the same result as by distance.
-  # => We can skip sqrt().
-  (x1-x2).abs**2 + (y1-y2).abs**2 + (z1-z2).abs**2
+@connections = []
+num_boxes = @boxes.length
+@boxes.each_with_index do |coords1, i|
+  x1, y1, z1 = coords1
+  ((i+1)...num_boxes).each do |j|
+    coords2 = @boxes[j]
+    x2, y2, z2 = coords2
+    @connections << [
+      # Sorting by distance squared should give the same result as by distance.
+      # => We can skip sqrt().
+      (x1-x2)**2 + (y1-y2)**2 + (z1-z2)**2,
+      coords1,
+      coords2,
+    ]
+  end
 end
+
+@connections.sort_by!(&:first)
 
 @box_circuit = {}
 @circuits = {}
@@ -34,7 +47,7 @@ end
 @next_i = 0
 def connect
   raise "No more connections" if @next_i >= @connections.length
-  coords1, coords2 = @connections[@next_i]
+  _, coords1, coords2 = @connections[@next_i]
   @next_i += 1
   circ1 = @box_circuit[to_box(coords1)]
   circ2 = @box_circuit[to_box(coords2)]
@@ -49,7 +62,7 @@ end
 # Part 1
 part1_connections.times { connect }
 largest3 = @circuits.values.map(&:length).sort.last(3)
-puts "Sizes of the largest 3 circuits: #{largest3.inject(:*)}"
+puts "Product of the largest 3 circuit sizes: #{largest3.inject(:*)}"
 
 # Part 2
 while @circuits.count > 1
