@@ -27,7 +27,7 @@ skeleton.rb
 -----------
 My starting point for each puzzle. Contains the stuff I mostly add to my solutions.
 
-run\_year.rb
+benchmark.rb
 ------------
 Runs the main solution (shortest filename) for every day (or specified days) of a given year, with a timer running for each.
 
