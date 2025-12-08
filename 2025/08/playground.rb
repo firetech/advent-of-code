@@ -18,16 +18,20 @@ def to_box(coords)
 end
 
 @connections = []
+# Sorting by distance squared should give the same result as by distance.
+# => We can skip sqrt().
+max_dist2 = @max_coord**2 * 3
+dist2_cutoff = max_dist2 / 75  # Reasonable-ish cutoff, chosen by feel.
 num_boxes = @boxes.length
 @boxes.each_with_index do |coords1, i|
   x1, y1, z1 = coords1
   ((i+1)...num_boxes).each do |j|
     coords2 = @boxes[j]
     x2, y2, z2 = coords2
+    dist2 = (x1-x2)**2 + (y1-y2)**2 + (z1-z2)**2
+    next if dist2 > dist2_cutoff
     @connections << [
-      # Sorting by distance squared should give the same result as by distance.
-      # => We can skip sqrt().
-      (x1-x2)**2 + (y1-y2)**2 + (z1-z2)**2,
+      dist2,
       coords1,
       coords2,
     ]
