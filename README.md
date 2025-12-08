@@ -45,6 +45,10 @@ lib/priority\_queue.rb
 ----------------------
 A simple (but still sufficiently fast) priority queue implementation in pure Ruby. About as fast as other pure Ruby implementations I've found, but has no dependencies.
 
+lib/linked\_queue.rb
+--------------------
+A simple linked list-based queue implementation, with an API matching the one of Ruby's default Array. Cannot store duplicate items due to links being stored in two Hash objects with queue items as key. Mainly made as an alternative backend for PriorityQueue (for testing), but seems to perform slightly worse than just using an Array.
+
 lib/multicore.rb
 ----------------
 Library for running processing on multiple CPU cores.
