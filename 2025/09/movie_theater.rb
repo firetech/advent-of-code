@@ -91,22 +91,19 @@ end
 @largest_area2 = 0
 stop = nil
 begin
-  input, output, stop, nrunners = Multicore.run(-@tiles.length) do |worker_in, worker_out|
+  n_combinations = (@tiles.length * (@tiles.length - 1)) / 2
+  input, output, stop, nrunners = Multicore.run(-(n_combinations / 2)) do |worker_in, worker_out|
     largest_area = 0
-    loop do
-      inp = worker_in[]
-      break if inp == :done
-
-      (x1, y1), (x2, y2) = inp
+    worker_in[].each do |(x1, y1), (x2, y2)|
       next unless rectangle_in_polygon?(x1, y1, x2, y2, @tiles)
       area = ((x1 - x2).abs + 1) * ((y1 - y2).abs + 1)
       largest_area = area if area > largest_area
     end
     worker_out[largest_area]
   end
-  @tiles.combination(2) { |points| input << points }
+  slice = (n_combinations / nrunners.to_f).ceil
+  @tiles.combination(2).each_slice(slice) { |list| input << list }
   nrunners.times do
-    input << :done
     area = output.pop
     @largest_area2 = area if area > @largest_area2
   end
