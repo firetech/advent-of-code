@@ -8,9 +8,89 @@ file = ARGV[0] || AOC.input_file()
 end
 
 # Part 1
-largest_area = 0
+@largest_area1 = 0
 @tiles.combination(2) do |(x1, y1), (x2, y2)|
   area = ((x1 - x2).abs + 1) * ((y1 - y2).abs + 1)
-  largest_area = area if area > largest_area
+  @largest_area1 = area if area > @largest_area1
 end
-puts "Largest rectangle area: #{largest_area}"
+puts "Largest rectangle area: #{@largest_area1}"
+
+
+# Part 2
+def orient(ax, ay, bx, by, cx, cy)
+  cross = (bx - ax) * (cy - ay) - (by - ay) * (cx - ax)
+  return cross <=> 0  # -1, 0 or 1
+end
+
+def point_on_segment?(px, py, x1, y1, x2, y2)
+  return false if orient(x1, y1, x2, y2, px, py) != 0  # Not colinear
+  xs = [x1, x2]
+  return false if px < xs.min or px > xs.max
+  ys = [y1, y2]
+  return false if py < ys.min or py > ys.max
+  return true
+end
+
+def point_in_polygon?(px, py, polygon)
+  inside = false
+  x1, y1 = polygon.last
+  polygon.each do |x2, y2|
+    if point_on_segment?(px, py, x1, y1, x2, y2)
+      return true
+    end
+    if (y1 > py) != (y2 > py)
+      x_intersect = (x2 - x1) * (py - y1) / (y2 - y1) + x1
+      inside = !inside if px < x_intersect
+    end
+
+    x1 = x2
+    y1 = y2
+  end
+  return inside
+end
+
+def segment_intersection?(x1, y1, x2, y2, x3, y3, x4, y4)
+  return (
+    (orient(x1, y1, x2, y2, x3, y3) * orient(x1, y1, x2, y2, x4, y4) < 0) and
+    (orient(x3, y3, x4, y4, x1, y1) * orient(x3, y3, x4, y4, x2, y2) < 0)
+  )
+end
+
+def rectangle_in_polygon?(x1, y1, x2, y2, polygon)
+  corners = [
+    [x1, y1],
+    [x1, y2],
+    [x2, y1],
+    [x2, y2],
+  ]
+
+  corners.each do |cx, cy|
+    return false unless point_in_polygon?(cx, cy, polygon)
+  end
+
+  edges = [
+    [x1, y1, x2, y1],
+    [x2, y1, x2, y2],
+    [x2, y2, x1, y2],
+    [x1, y2, x1, y1],
+  ]
+  edges.each do |ex1, ey1, ex2, ey2|
+    px1, py1 = polygon.last
+    polygon.each do |px2, py2|
+      return false if segment_intersection?(ex1, ey1, ex2, ey2, px1, py1, px2, py2)
+
+      px1 = px2
+      py1 = py2
+    end
+  end
+
+  return true
+end
+
+@largest_area2 = 0
+@tiles.combination(2) do |(x1, y1), (x2, y2)|
+  next unless rectangle_in_polygon?(x1, y1, x2, y2, @tiles)
+  area = ((x1 - x2).abs + 1) * ((y1 - y2).abs + 1)
+  @largest_area2 = area if area > @largest_area2
+end
+puts "Largest rectangle area within boundary: #{@largest_area2}"
