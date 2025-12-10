@@ -73,7 +73,6 @@ require 'timeout'
 
 # Preload common libraries
 require 'set'
-require 'z3'
 Dir.glob(File.join(__dir__, 'lib/*.rb')) do |lib|
   require lib.chomp('.rb')
 end
@@ -103,9 +102,11 @@ Dir.glob(File.join(__dir__, year, days)).sort.each do |day_folder|
           ensure
             STDOUT.reopen(org_stdout)
             (Module.constants - org_constants).each do |const|
+              next if [:Z3, :FFI].include?(const)
               Object.send(:remove_const, const)
             end
             ($LOADED_FEATURES - org_loaded).each do |feat|
+              next if feat.include?('/z3/')
               $LOADED_FEATURES.delete(feat)
             end
           end
