@@ -64,14 +64,11 @@ def iterate(block)
   size = block.length
   if size % 2 == 0
     split_size = 2
-    map_size = 3
   elsif size % 3 == 0
     split_size = 3
-    map_size = 4
   else
     raise "Bad size: #{size}"
   end
-  new_size = (size / split_size) * map_size
   new = []
   split(block, split_size).each do |split_line|
     new_lines = []
