@@ -107,7 +107,7 @@ begin
   worker_slice = (inputs.length / workers.to_f).ceil
   inputs.each_slice(worker_slice) { |list| input << list }
   @cheats = [0, 0]
-  workers.times do
+  (inputs.length / worker_slice.to_f).ceil.times do
     this_cheats = output.pop
     @cheats[0] += this_cheats[0]
     @cheats[1] += this_cheats[1]

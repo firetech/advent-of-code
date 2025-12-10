@@ -53,7 +53,7 @@ begin
   end
   @sum2000 = 0 # Part 1
   @totals = {} # Part 2
-  nrunners.times do
+  (@numbers.length / runner_slice.to_f).ceil.times do
     sum2000, totals = output.pop
     @sum2000 += sum2000 # Part 1
     @totals.merge!(totals) { |_, v1, v2| v1 + v2 } # Part 2
