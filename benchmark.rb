@@ -73,6 +73,7 @@ require 'timeout'
 
 # Preload common libraries
 require 'set'
+require 'z3'
 Dir.glob(File.join(__dir__, 'lib/*.rb')) do |lib|
   require lib.chomp('.rb')
 end
