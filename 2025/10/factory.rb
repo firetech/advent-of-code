@@ -1,5 +1,5 @@
+require 'set'
 require_relative '../../lib/aoc'
-require_relative '../../lib/priority_queue'
 
 file = ARGV[0] || AOC.input_file()
 #file = 'example1'
@@ -29,29 +29,23 @@ File.read(file).rstrip.split("\n").each do |line|
 end
 
 # Part 1
-@sum_presses = 0
+@sum_presses1 = 0
 @machines.each do |pattern, buttons, _|
-  cost = Hash.new(Float::INFINITY)
-  queue = PriorityQueue.new
-  cost[0] = 0
-  queue.push(0, 0)
+  visited = Set[0]
+  queue = [[0, 0]]
   until queue.empty?
-    state = queue.pop_min
-    this_cost = cost[state]
+    state, presses = queue.shift
 
     if state == pattern
-      @sum_presses += this_cost
+      @sum_presses1 += presses
       break
     end
 
+    new_presses = presses + 1
     buttons.each do |btn|
       new_state = state ^ btn
-      new_cost = this_cost + 1
-      if new_cost < cost[new_state]
-        cost[new_state] = new_cost
-        queue.push(new_state, new_cost)
-      end
+      queue << [new_state, new_presses] if visited.add?(new_state)
     end
   end
 end
-puts "Minimum number of button presses for indicators: #{@sum_presses}"
+puts "Minimum number of button presses for indicators: #{@sum_presses1}"
