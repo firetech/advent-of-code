@@ -3,6 +3,22 @@ Initial Solutions
 
 Links to the initial versions (i.e. the versions used to generate the submitted answers) of my Advent of Code solutions, for the purposes of local contest audits.
 
+2025
+====
+[Day 1](https://github.com/firetech/advent-of-code/commit/0b53bbe67106dec706094b384ed0402471bdcb8b)  
+[Day 2](https://github.com/firetech/advent-of-code/commit/3e1dfcdba78774f383bf8ad4f137b9010caa6173)  
+Day 3 [part 1](https://github.com/firetech/advent-of-code/commit/a07cf1fcea1735d10e57dff2e72d3a0acc0a611b), [part 2](https://github.com/ firetech/advent-of-code/commit/f7f286d128514b24ad945e2c5ac2be53ad4742e5) (Note: both commits mistakenly say "2025/02" instead of "2025/03". I blame sleep deprivation.)  
+[Day 4](https://github.com/firetech/advent-of-code/commit/016ff98acd215f53f8b434fe6c97460ce272d876)  
+[Day 5](https://github.com/firetech/advent-of-code/commit/338d86b0625e2d323c19c0883499b002b41b84fa)  
+Day 6 [part 1](https://github.com/firetech/advent-of-code/commit/3e7bc8daca7739271758b3239263d204482231a1) [part 2](https://github.com/firetech/advent-of-code/commit/faa99351d16c599e8bfc4817e764ee6ad48747a1)  
+Day 7 [part 1](https://github.com/firetech/advent-of-code/commit/a69b6dc1ff07ccea755b97c1b8be0ea5abe0654a) [part 2](https://github.com/firetech/advent-of-code/commit/654c651a52e41cea8ce199fc47eb4d08bd689bb1)  
+[Day 8](https://github.com/firetech/advent-of-code/commit/ba2b0251897c5be3443ed848710fb0ee97f94774)  
+Day 9 [part 1](https://github.com/firetech/advent-of-code/commit/0e175ad501daa2fabb5ec59ece5c14966537d373) [part 2](https://github.com/firetech/advent-of-code/commit/89ede0bf39c634bdd720a8f210043617b8a5f059)  
+Day 10 [part 1](https://github.com/firetech/advent-of-code/commit/991a94f08a19f54a2305a1ec456c95c1c9dff46c) [part 2](https://github.com/firetech/advent-of-code/commit/0fb1c0178b4b6250487f0a6fbf0191e4331471e4)  
+Day 11 [part 1](https://github.com/firetech/advent-of-code/commit/ad4f4809b1792ac34197a539bb92b3872d458011) [part 2](https://github.com/firetech/advent-of-code/commit/ca90e52728f99333d7239b931959171776645623)  
+[Day 12](https://github.com/firetech/advent-of-code/commit/966cabb4e707bd75b2da4f27466c65efab2164d0)  
+
+
 2024
 ====
 [Day 1](https://github.com/firetech/advent-of-code/commit/f600710cbab1ba1613ab33b556f30815b0421a8c)  
