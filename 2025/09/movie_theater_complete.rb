@@ -9,12 +9,12 @@ file = ARGV[0] || AOC.input_file()
 end
 
 # Part 1
-@largest_area1 = 0
-@tiles.combination(2) do |(x1, y1), (x2, y2)|
+@areas = @tiles.combination(2).map do |(x1, y1), (x2, y2)|
   area = ((x1 - x2).abs + 1) * ((y1 - y2).abs + 1)
-  @largest_area1 = area if area > @largest_area1
+  [area, x1, y1, x2, y2]
 end
-puts "Largest rectangle area: #{@largest_area1}"
+@areas.sort_by! { |a| -a.first }
+puts "Largest rectangle area: #{@areas.first.first}"
 
 
 # Part 2
@@ -64,7 +64,6 @@ def rectangle_in_polygon?(x1, y1, x2, y2, polygon)
     [x2, y1],
     [x2, y2],
   ]
-
   corners.each do |cx, cy|
     return false unless point_in_polygon?(cx, cy, polygon)
   end
@@ -91,19 +90,17 @@ end
 @largest_area2 = 0
 stop = nil
 begin
-  n_combinations = (@tiles.length * (@tiles.length - 1)) / 2
-  input, output, stop, nrunners = Multicore.run(-n_combinations) do |worker_in, worker_out|
+  n_areas = @areas.length
+  _, output, stop, n_runners = Multicore.run(-n_areas) do |_, worker_out, runner, n_runners|
     largest_area = 0
-    worker_in[].each do |(x1, y1), (x2, y2)|
+    runner.step(n_areas-1, n_runners) do |i|
+      area, x1, y1, x2, y2 = @areas[i]
       next unless rectangle_in_polygon?(x1, y1, x2, y2, @tiles)
-      area = ((x1 - x2).abs + 1) * ((y1 - y2).abs + 1)
       largest_area = area if area > largest_area
     end
     worker_out[largest_area]
   end
-  slice = (n_combinations / nrunners.to_f).ceil
-  @tiles.combination(2).each_slice(slice) { |list| input << list }
-  (n_combinations / slice.to_f).ceil.times do
+  n_runners.times do
     area = output.pop
     @largest_area2 = area if area > @largest_area2
   end
