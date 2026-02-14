@@ -73,7 +73,10 @@ require 'timeout'
 
 # Preload common libraries
 require 'set'
-Dir.glob(File.join(__dir__, 'lib/*.rb')) do |lib|
+[
+  *Dir.glob(File.join(__dir__, 'lib/*.rb')),
+  *Dir.glob(File.join(__dir__, year, 'lib/*.rb')),
+].each do |lib|
   require lib.chomp('.rb')
 end
 
@@ -83,9 +86,13 @@ Dir.glob(File.join(__dir__, year, days)).sort.each do |day_folder|
   next unless day =~ /\A\d{1,2}\z/
   file = Dir.glob(File.join(day_folder, '*.rb')).sort_by(&:length).first
   next if file.nil?
+
+  # Make sure input is stored.
+  AOC.input_file(day, year)
+
+  # Fork in order to not taint memory of main process.
   child = nil
   begin
-  # Fork in order to not taint memory of main process.
     read_from_fork, write_from_fork = IO.pipe
     child = fork do
       ARGV.clear
@@ -102,11 +109,11 @@ Dir.glob(File.join(__dir__, year, days)).sort.each do |day_folder|
           ensure
             STDOUT.reopen(org_stdout)
             (Module.constants - org_constants).each do |const|
-              next if [:Z3, :FFI].include?(const)
+              next if [:Z3, :FFI].include?(const) # Unloading Z3 causes issues.
               Object.send(:remove_const, const)
             end
             ($LOADED_FEATURES - org_loaded).each do |feat|
-              next if feat.include?('/z3/')
+              next if feat.include?('/z3/') # Unloading Z3 causes issues.
               $LOADED_FEATURES.delete(feat)
             end
           end
