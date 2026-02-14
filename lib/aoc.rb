@@ -5,7 +5,7 @@ module AOC
       token = File.read(session_file).strip
     else
       print 'Please supply your session ID: '
-      token = gets.strip
+      token = STDIN.gets.strip
       File.open(session_file, 'w') do |f|
         f.puts token
       end
