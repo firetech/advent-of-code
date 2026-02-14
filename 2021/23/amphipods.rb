@@ -85,8 +85,6 @@ def move_to_order(amphipods, end_y)
         # Skip amphipods that are done or can't move
         done = (x == home) # In right column
         blocked = false
-        home_free = true
-        home_pos = end_y.max
         state.each do |other_x, other_y, other_type|
           next if other_x != x
           if other_y < y

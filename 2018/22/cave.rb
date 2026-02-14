@@ -126,7 +126,6 @@ until queue.empty?
 
     # Check tool
     nrisk = get_risk(nx, ny)
-    ntool = tool
     (TOOLS[nrisk] & TOOLS[this_risk]).each do |ntool|
       move_time = 1
       if ntool != tool
