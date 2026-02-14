@@ -42,7 +42,7 @@ def dijkstra(map)
   queue = PriorityQueue.new
   queue.push(start, 0)
   until queue.empty?
-    pos = queue.pop_min
+    pos = queue.pop
 
     if pos == target
       return dist[target]

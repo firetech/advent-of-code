@@ -54,7 +54,7 @@ def move_to_order(amphipods, end_y)
   queue = PriorityQueue.new
   queue.push(hash, 0)
   until queue.empty?
-    hash = queue.pop_min
+    hash = queue.pop
     this_cost = cost[hash]
     state = map[hash]
 

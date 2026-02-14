@@ -19,6 +19,10 @@ class LinkedQueue
   end
   alias_method :<<, :push
 
+  def first
+    @head
+  end
+
   def shift
     return nil if @head.nil?
 

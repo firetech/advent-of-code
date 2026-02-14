@@ -38,7 +38,7 @@ def path(max_steps, min_steps = 1)
     queue.push(state, 0)
   end
   until queue.empty?
-    state = queue.pop_min
+    state = queue.pop
     pos, dx, dy = from_state(state)
 
     return min_dist[state] if pos == @target

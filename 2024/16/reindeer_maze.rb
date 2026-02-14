@@ -68,7 +68,7 @@ path[start] = [@start]
 queue = PriorityQueue.new
 queue.push(start, 0)
 until queue.empty?
-  state = queue.pop_min
+  state = queue.pop
   pos, dir = from_state(state)
   this_cost = cost[state]
   this_path = path[state]

@@ -43,7 +43,7 @@ Library containing common math features used in a few solutions.
 
 lib/priority\_queue.rb
 ----------------------
-A simple (but still sufficiently fast) priority queue implementation in pure Ruby. About as fast as other pure Ruby implementations I've found, but has no dependencies.
+A simple (but still sufficiently fast) priority queue implementation in pure Ruby. About as fast as other pure Ruby implementations I've found, but has no dependencies. If the `d_heap` gem is installed. `PriorityQueue.new` will by default return a `DHeap::Map` instead, as a drop-in replacement.
 
 lib/linked\_queue.rb
 --------------------
